@@ -17,6 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/posts")
+@CrossOrigin(origins = "http://localhost:4200")
 public class PostController {
     private PostService postService;
     private UserService userService;
@@ -59,7 +60,7 @@ public class PostController {
         Long userId = this.getCurrentUserId();
         Long postOwnerId = postService.getPost(postId).get().getUser();
 
-        if (userId == postOwnerId || userService.hasRole(userId, "MODERATOR")) {
+        if (userId == postOwnerId || userService.hasRole(userId, "MODERATOR")) { // TODO: sprawdzić te "=="
             boolean success = postService.deletePost(postId);
             if (success) {
                 return ResponseEntity.ok().build();
