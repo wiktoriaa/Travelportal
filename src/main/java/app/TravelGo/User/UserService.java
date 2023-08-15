@@ -1,14 +1,15 @@
 package app.TravelGo.User;
 
+import app.TravelGo.User.Role.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UserService {
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     public UserService(UserRepository userRepository) {
@@ -38,5 +39,15 @@ public class UserService {
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    public void addRoleToUser(Long userId, Role newRole) {
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user != null) {
+            Set<Role> roles = user.getRoles();
+            roles.add(newRole);
+            userRepository.save(user);
+        }
     }
 }

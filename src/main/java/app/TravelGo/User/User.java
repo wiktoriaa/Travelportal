@@ -1,14 +1,13 @@
 package app.TravelGo.User;
 
-import app.TravelGo.Post.Post;
+import app.TravelGo.User.Role.Role;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -45,4 +44,16 @@ public class User implements Serializable {
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Set<Role> roles;
+
+    public void addRole(Role role) {
+        if (this.roles == null) {
+            this.roles = new HashSet<>();
+        }
+        this.roles.add(role);
+    }
+
+    public boolean hasRole(String searchedRole) {
+        return this.getRoles().stream()
+                .anyMatch(role -> role.getName().equals(searchedRole));
+    }
 }
