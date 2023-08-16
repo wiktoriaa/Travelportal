@@ -85,20 +85,32 @@ public class UserController {
 
     @PostMapping("/{user_id}/permission")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Void> grantPermision(@PathVariable(name = "user_id") Long id, @RequestBody CreatePermissionRequest request) {
-        User currentUser = getCurrentUser();
-
-        if (currentUser.hasRole("MODERATOR")) {
+    public ResponseEntity<Void> grantPermission(@PathVariable(name = "user_id") Long id, @RequestBody CreatePermissionRequest request) {
+        if (getCurrentUser().hasRole("MODERATOR")) {
             Role role = this.roleRepository.findByName(request.getPermissionKey()).get();
             this.userService.addRoleToUser(id, role);
             return ResponseEntity.accepted().build();
         }
+
+        return ResponseEntity.internalServerError().build();
+    }
+
+    @DeleteMapping("/{user_id}/permission")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Void> revokePermission(@PathVariable(name = "user_id") Long id, @RequestBody CreatePermissionRequest request) {
+        if (getCurrentUser().hasRole("MODERATOR")) {
+            Role role = this.roleRepository.findByName(request.getPermissionKey()).get();
+            this.userService.removeRoleFromUser(id, role);
+            return ResponseEntity.accepted().build();
+        }
+
         return ResponseEntity.internalServerError().build();
     }
 
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails currentUserDetails = (UserDetails) authentication.getPrincipal();
+
         return this.userService.getUser(currentUserDetails.getUsername()).get();
     }
 }

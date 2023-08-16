@@ -50,4 +50,14 @@ public class UserService {
             userRepository.save(user);
         }
     }
+
+    public void removeRoleFromUser(Long userId, Role role) {
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user != null && user.hasRole(role.getName())) {
+            Set<Role> roles = user.getRoles();
+            roles.remove(role);
+            userRepository.save(user);
+        }
+    }
 }
