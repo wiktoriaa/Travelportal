@@ -2,16 +2,13 @@ package app.TravelGo.Comment;
 
 import app.TravelGo.Post.Post;
 import app.TravelGo.Post.PostService;
-import app.TravelGo.User.User;
+import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.UserService;
 import app.TravelGo.dto.CreateCommentRequest;
 import app.TravelGo.dto.GetCommentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -24,15 +21,18 @@ import java.util.Optional;
 @RequestMapping("api/posts")
 @CrossOrigin(origins = "http://localhost:4200")
 public class CommentController {
-    private UserService userService;
-    private CommentService commentService;
-    private PostService postService;
+    private final UserService userService;
+    private final CommentService commentService;
+    private final PostService postService;
+    private final AuthService authService;
 
     @Autowired
-    public CommentController(CommentService commentService, UserService userService, PostService postService) {
+    public CommentController(CommentService commentService, UserService userService, PostService postService,
+                             AuthService authService) {
         this.userService = userService;
         this.commentService = commentService;
         this.postService = postService;
+        this.authService = authService;
     }
 
     @GetMapping("/{post_id}/comments")
@@ -62,7 +62,7 @@ public class CommentController {
         if (post.isPresent()) {
             Comment comment = Comment.builder()
                     .content(request.getContent())
-                    .userID(this.getCurrentUserId())
+                    .userID(this.authService.getCurrentUserId())
                     .postId(post.get().getId())
                     .createdAt(LocalDateTime.now())
                     .build();
@@ -98,7 +98,7 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(@PathVariable("post_id") Long postId, @PathVariable("comment_id") Long commentId) {
         Optional<Comment> commentResponse = commentService.getComment(commentId);
         if (commentResponse.isPresent() && commentResponse.get().getPostId().equals(postId)) {
-            Long userId = this.getCurrentUserId();
+            Long userId = this.authService.getCurrentUserId();
             Long commentOwnerId = commentResponse.get().getUserID();
 
             if (userId.equals(commentOwnerId) || userService.hasRole(userId, "MODERATOR")) {
@@ -109,13 +109,5 @@ public class CommentController {
             }
         }
         return ResponseEntity.notFound().build();
-    }
-
-    private Long getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails currentUserDetails = (UserDetails) authentication.getPrincipal();
-        User currentUser = this.userService.getUser(currentUserDetails.getUsername()).get();
-
-        return currentUser.getId();
     }
 }

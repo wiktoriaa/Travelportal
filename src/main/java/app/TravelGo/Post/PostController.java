@@ -1,15 +1,12 @@
 package app.TravelGo.Post;
 
-import app.TravelGo.User.User;
+import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.UserService;
 import app.TravelGo.dto.CreatePostRequest;
 import app.TravelGo.dto.GetPostResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -19,13 +16,15 @@ import java.util.Optional;
 @RequestMapping("api/posts")
 @CrossOrigin(origins = "http://localhost:4200")
 public class PostController {
-    private PostService postService;
-    private UserService userService;
+    private final PostService postService;
+    private final UserService userService;
+    private final AuthService authService;
 
     @Autowired
-    public PostController(PostService postService, UserService userService) {
+    public PostController(PostService postService, UserService userService, AuthService authService) {
         this.postService = postService;
         this.userService = userService;
+        this.authService = authService;
     }
 
     @GetMapping("/")
@@ -57,10 +56,10 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> deletePost(@PathVariable("post_id") Long postId) {
 
-        Long userId = this.getCurrentUserId();
-        Long postOwnerId = postService.getPost(postId).get().getUser();
+        Long userId = this.authService.getCurrentUserId();
+        Long postOwnerId = postService.getPost(postId).orElse(null).getUser();
 
-        if (userId == postOwnerId || userService.hasRole(userId, "MODERATOR")) { // TODO: sprawdzić te "=="
+        if (userId.equals(postOwnerId) || userService.hasRole(userId, "MODERATOR")) { // TODO: sprawdzić te "=="
             boolean success = postService.deletePost(postId);
             if (success) {
                 return ResponseEntity.ok().build();
@@ -78,7 +77,7 @@ public class PostController {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .likes(0)
-                .user(this.getCurrentUserId())
+                .user(this.authService.getCurrentUserId())
                 .status(request.getStatus())
                 .build();
 
@@ -86,14 +85,6 @@ public class PostController {
 
         return ResponseEntity.created(builder.pathSegment("api", "posts", "{id}")
                 .buildAndExpand(post.getId()).toUri()).build();
-    }
-
-    private Long getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails currentUserDetails = (UserDetails) authentication.getPrincipal();
-        User currentUser = this.userService.getUser(currentUserDetails.getUsername()).get();
-
-        return currentUser.getId();
     }
 
     //TODO getComments, createComment, deleteComment & obvi entity comments

@@ -1,14 +1,12 @@
 package app.TravelGo.User;
 
+import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.Role.Role;
 import app.TravelGo.User.Role.RoleRepository;
 import app.TravelGo.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -20,11 +18,13 @@ import java.util.Optional;
 public class UserController {
     private final UserService userService;
     private final RoleRepository roleRepository;
+    private final AuthService authService;
 
     @Autowired
-    public UserController(UserService userService, RoleRepository roleRepository) {
+    public UserController(UserService userService, RoleRepository roleRepository, AuthService authService) {
         this.userService = userService;
         this.roleRepository = roleRepository;
+        this.authService = authService;
     }
 
     @GetMapping("")
@@ -86,7 +86,7 @@ public class UserController {
     @PostMapping("/{user_id}/permission")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> grantPermission(@PathVariable(name = "user_id") Long id, @RequestBody CreatePermissionRequest request) {
-        if (getCurrentUser().hasRole("MODERATOR")) {
+        if (this.authService.getCurrentUser().hasRole("MODERATOR")) {
             Role role = this.roleRepository.findByName(request.getPermissionKey()).orElse(null);
             this.userService.addRoleToUser(id, role);
             return ResponseEntity.accepted().build();
@@ -98,19 +98,12 @@ public class UserController {
     @DeleteMapping("/{user_id}/permission")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> revokePermission(@PathVariable(name = "user_id") Long id, @RequestBody CreatePermissionRequest request) {
-        if (getCurrentUser().hasRole("MODERATOR")) {
+        if (this.authService.getCurrentUser().hasRole("MODERATOR")) {
             Role role = this.roleRepository.findByName(request.getPermissionKey()).orElse(null);
             this.userService.removeRoleFromUser(id, role);
             return ResponseEntity.accepted().build();
         }
 
         return ResponseEntity.internalServerError().build();
-    }
-
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails currentUserDetails = (UserDetails) authentication.getPrincipal();
-
-        return this.userService.getUser(currentUserDetails.getUsername()).orElse(null);
     }
 }

@@ -7,7 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import app.TravelGo.User.User;
+import app.TravelGo.User.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +22,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtTokenFilter extends OncePerRequestFilter {
     @Autowired
     private JwtTokenUtil jwtUtil;
+
+    @Autowired
+    private UserService userService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -46,11 +49,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private boolean hasAuthorizationBearer(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
-        if (ObjectUtils.isEmpty(header)) {
-            return false;
-        }
-
-        return true;
+        return !ObjectUtils.isEmpty(header);
     }
 
     private String getAccessToken(HttpServletRequest request) {
@@ -70,12 +69,14 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 
     private UserDetails getUserDetails(String token) {
-        User userDetails = new User();
-        String[] jwtSubject = jwtUtil.getSubject(token).split(",");
+        return userService.getUser(this.getIdFromToken(token)).orElse(null);
+    }
 
-        userDetails.setId(Long.getLong(jwtSubject[0]));
-        userDetails.setEmail(jwtSubject[1]);
+    private Long getIdFromToken(String token) {
+        return Long.parseLong(jwtUtil.getSubject(token).split(",")[0]);
+    }
 
-        return userDetails;
+    private String getEmailFromToken(String token) {
+        return jwtUtil.getSubject(token).split(",")[1];
     }
 }
