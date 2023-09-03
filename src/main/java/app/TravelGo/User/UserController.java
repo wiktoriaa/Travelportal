@@ -18,8 +18,8 @@ import java.util.Optional;
 @RequestMapping("api/users")
 @CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
-    private UserService userService;
-    private RoleRepository roleRepository;
+    private final UserService userService;
+    private final RoleRepository roleRepository;
 
     @Autowired
     public UserController(UserService userService, RoleRepository roleRepository) {
@@ -30,7 +30,7 @@ public class UserController {
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     public @ResponseBody Iterable<User> getAllUsers() {
-        return userService.getAllUsers();
+        return userService.getAllUsers(); // TODO: Remove passwords
     }
 
     @GetMapping("/{user_id}")
@@ -87,7 +87,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> grantPermission(@PathVariable(name = "user_id") Long id, @RequestBody CreatePermissionRequest request) {
         if (getCurrentUser().hasRole("MODERATOR")) {
-            Role role = this.roleRepository.findByName(request.getPermissionKey()).get();
+            Role role = this.roleRepository.findByName(request.getPermissionKey()).orElse(null);
             this.userService.addRoleToUser(id, role);
             return ResponseEntity.accepted().build();
         }
@@ -99,7 +99,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> revokePermission(@PathVariable(name = "user_id") Long id, @RequestBody CreatePermissionRequest request) {
         if (getCurrentUser().hasRole("MODERATOR")) {
-            Role role = this.roleRepository.findByName(request.getPermissionKey()).get();
+            Role role = this.roleRepository.findByName(request.getPermissionKey()).orElse(null);
             this.userService.removeRoleFromUser(id, role);
             return ResponseEntity.accepted().build();
         }
@@ -111,6 +111,6 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails currentUserDetails = (UserDetails) authentication.getPrincipal();
 
-        return this.userService.getUser(currentUserDetails.getUsername()).get();
+        return this.userService.getUser(currentUserDetails.getUsername()).orElse(null);
     }
 }
