@@ -1,7 +1,6 @@
 package app.TravelGo.Document;
 
 import app.TravelGo.Trip.Trip;
-import app.TravelGo.Offer.Offer;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -29,10 +28,4 @@ public class Document implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id")
     private Trip trip;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "offer_id")
-    private Offer offer;
-
-
 }

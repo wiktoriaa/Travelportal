@@ -13,4 +13,7 @@ public class GetTripResponse {
     private LocalDate date;
     private String gathering_place;
     private String trip_name;
+    private Double rate;
+    private Integer number_of_rates;
+    private Boolean archived;
 }
