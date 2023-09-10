@@ -21,7 +21,7 @@ import java.util.List;
 @Table(name = "trips")
 public class Trip implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "trips")
     @Column(name = "id")
     private Long id;
 
@@ -33,5 +33,8 @@ public class Trip implements Serializable {
     @ToString.Exclude
     private List<Document> documents = new ArrayList<>();
 
+    private Double rate;
+    private Integer number_of_rates;
 
+    private Boolean archived;
 }

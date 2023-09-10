@@ -17,7 +17,5 @@ public class GetDocumentResponse {
     private Long id;
     private String file_name;
     private String title;
-    private Trip trip;
-    private Offer offer;
-
+    private Long trip_id;
 }

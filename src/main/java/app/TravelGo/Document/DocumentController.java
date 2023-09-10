@@ -28,8 +28,7 @@ public class DocumentController {
                     .id(document.getId())
                     .file_name(document.getFile_name())
                     .title(document.getTitle())
-                    .trip(document.getTrip())
-                    .offer(document.getOffer())
+                    .trip_id(document.getTrip().getId())
                     .build();
             return ResponseEntity.ok(documentResponse);
         }
