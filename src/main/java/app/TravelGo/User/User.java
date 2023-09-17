@@ -1,6 +1,7 @@
 package app.TravelGo.User;
 
 import app.TravelGo.User.Role.Role;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,8 +34,14 @@ public class User implements UserDetails {
     private String username;
     private String name;
     private String surname;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String email;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Integer phoneNumber;
     private Integer privileges;
 

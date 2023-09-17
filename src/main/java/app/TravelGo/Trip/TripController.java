@@ -1,9 +1,7 @@
 package app.TravelGo.Trip;
 
-import app.TravelGo.Comment.Comment;
 import app.TravelGo.Document.Document;
 import app.TravelGo.Document.DocumentService;
-import app.TravelGo.Post.Post;
 import app.TravelGo.User.User;
 import app.TravelGo.User.UserService;
 import app.TravelGo.dto.*;
@@ -16,16 +14,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("api/trips")
 public class TripController {
-    private TripService tripService;
-    private UserService userService;
-    private DocumentService documentService;
+    private final TripService tripService;
+    private final UserService userService;
+    private final DocumentService documentService;
 
     @Autowired
     public TripController(TripService tripService, UserService userService, DocumentService documentService)  {
@@ -156,33 +153,4 @@ public class TripController {
 
         return currentUser.getId();
     }
-  /*  @PutMapping("/{trip_id}/rate")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> rateTrip(@PathVariable("trip_id") Long tripId, @RequestBody RateTripRequest request) {
-        boolean success = tripService.rateTrip(tripId, request.getRating());
-        if (success) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
-
-    @PutMapping("/{trip_id}/archive")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> archiveTrip(@PathVariable("trip_id") Long tripId) {
-        boolean success = tripService.archiveTrip(tripId);
-        if (success) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
-
-    @DeleteMapping("/{trip_id}")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> deleteTrip(@PathVariable("trip_id") Long tripId) {
-        boolean success = tripService.deleteTrip(tripId);
-        if (success) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
-    }*/
 }
