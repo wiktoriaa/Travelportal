@@ -27,7 +27,7 @@ public class PostController {
         this.authService = authService;
     }
 
-    @GetMapping("/")
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public @ResponseBody
     Iterable<Post> getAllPosts() {
@@ -86,8 +86,5 @@ public class PostController {
         return ResponseEntity.created(builder.pathSegment("api", "posts", "{id}")
                 .buildAndExpand(post.getId()).toUri()).build();
     }
-
-    //TODO getComments, createComment, deleteComment & obvi entity comments
-
 
 }

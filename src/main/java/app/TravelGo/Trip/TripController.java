@@ -52,7 +52,7 @@ public class TripController {
         return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/")
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<GetTripResponse>> getAllTrips() {
         List<Trip> trips = tripService.getTrips();
