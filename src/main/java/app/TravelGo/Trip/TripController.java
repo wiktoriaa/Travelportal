@@ -2,6 +2,7 @@ package app.TravelGo.Trip;
 
 import app.TravelGo.Document.Document;
 import app.TravelGo.Document.DocumentService;
+import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.User;
 import app.TravelGo.User.UserService;
 import app.TravelGo.dto.*;
@@ -14,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,14 +24,12 @@ import java.util.Optional;
 @RequestMapping("api/trips")
 public class TripController {
     private final TripService tripService;
-    private final UserService userService;
-    private final DocumentService documentService;
+    private final AuthService authService;
 
     @Autowired
-    public TripController(TripService tripService, UserService userService, DocumentService documentService)  {
+    public TripController(TripService tripService, AuthService authService)  {
         this.tripService = tripService;
-        this.userService = userService;
-        this.documentService = documentService;
+        this.authService = authService;
     }
 
     @GetMapping("/{trip_id}")
@@ -53,9 +54,32 @@ public class TripController {
 
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
-    public @ResponseBody
-    Iterable<Trip> getAllTrips() {
-        return tripService.getTrips();
+    public ResponseEntity<List<GetTripResponse>> getAllTrips() {
+        List<Trip> trips = tripService.getTrips();
+
+        if (!trips.isEmpty()) {
+            List<GetTripResponse> tripResponses = new ArrayList<>();
+
+            for (Trip trip : trips) {
+                if(!trip.getArchived()){
+                    GetTripResponse tripResponse = GetTripResponse.builder()
+                            .id(trip.getId())
+                            .date(trip.getDate())
+                            .gathering_place(trip.getGathering_place())
+                            .trip_name(trip.getTrip_name())
+                            .rate(trip.getRate())
+                            .number_of_rates(trip.getNumber_of_rates())
+                            .archived(trip.getArchived())
+                            .build();
+
+                    tripResponses.add(tripResponse);
+                }
+            }
+
+            return ResponseEntity.ok(tripResponses);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
     }
 
 
@@ -77,30 +101,20 @@ public class TripController {
 
 
     @DeleteMapping("/{trip_id}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> deleteTrip(@PathVariable("trip_id") Long tripId) {
-        Long userId = this.getCurrentUserId();
+        Optional<Trip> existingTripOptional = tripService.getTrip(tripId);
 
-        if (userService.hasRole(userId, "MODERATOR")) {
-            Optional<Trip> optionalTrip = tripService.getTrip(tripId);
+        if (existingTripOptional.isPresent() && authService.getCurrentUser().hasRole("MODERATOR")) {
+            Trip existingTrip = existingTripOptional.get();
 
-            if (optionalTrip.isPresent()) {
-                Trip trip = optionalTrip.get();
 
-                // Najpierw usuń dokumenty powiązane z wycieczką
-                for (Document document : trip.getDocuments()) {
-                    documentService.deleteDocument(document.getId());
-                }
+            tripService.deleteTrip(existingTrip.getId());
 
-                // Następnie usuń wycieczkę
-                boolean success = tripService.deleteTrip(tripId);
-                if (success) {
-                    return ResponseEntity.ok().build();
-                }
-            }
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
-
-        return ResponseEntity.notFound().build();
     }
 
 
@@ -132,25 +146,18 @@ public class TripController {
     @PutMapping("/{trip_id}/archive")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> archiveTrip(@PathVariable("trip_id") Long tripId) {
-        Long userId = this.getCurrentUserId();
+        if (authService.getCurrentUser().hasRole("MODERATOR")) {
+            Optional<Trip> optionalTrip = tripService.getTrip(tripId);
 
-        if (userService.hasRole(userId, "MODERATOR")) {
-            boolean success = tripService.archiveTrip(tripId);
+            if (optionalTrip.isPresent()) {
+                Trip trip = optionalTrip.get();
+                trip.setArchived(true);
+                tripService.saveTrip(trip);
 
-            if (success) {
                 return ResponseEntity.ok().build();
             }
         }
-
         return ResponseEntity.notFound().build();
     }
 
-
-    private Long getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetails currentUserDetails = (UserDetails) authentication.getPrincipal();
-        User currentUser = this.userService.getUser(currentUserDetails.getUsername()).get();
-
-        return currentUser.getId();
-    }
 }

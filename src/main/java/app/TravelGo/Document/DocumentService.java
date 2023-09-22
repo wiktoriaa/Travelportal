@@ -34,4 +34,8 @@ public class DocumentService {
     public List<Document> getAllDocuments() {
         return documentRepository.findAll();
     }
+
+    public void updateDocument(Document document) {
+        documentRepository.save(document);
+    }
 }

@@ -14,7 +14,6 @@ import java.util.Optional;
 public class TripService {
     private final TripRepository tripRepository;
 
-
     @Autowired
     public TripService(TripRepository tripRepository) {
         this.tripRepository = tripRepository;
@@ -36,18 +35,6 @@ public class TripService {
             tripRepository.deleteById(tripId);
             return true;
         }
-        return false;
-    }
-    public boolean archiveTrip(Long tripId) {
-        Optional<Trip> optionalTrip = tripRepository.findById(tripId);
-
-        if (optionalTrip.isPresent()) {
-            Trip trip = optionalTrip.get();
-            trip.setArchived(true);
-            tripRepository.save(trip);
-            return true;
-        }
-
         return false;
     }
 
