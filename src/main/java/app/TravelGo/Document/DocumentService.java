@@ -19,8 +19,8 @@ public class DocumentService {
         return documentRepository.findById(documentID);
     }
 
-    public Document createDocument(Document document) {
-        return documentRepository.save(document);
+    public void createDocument(Document document) {
+        documentRepository.save(document);
     }
 
     public boolean deleteDocument(Long documentID) {
