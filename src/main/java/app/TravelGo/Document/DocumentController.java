@@ -129,5 +129,33 @@ public class DocumentController {
         }
     }
 
+    @PutMapping("/{document_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Void> updateDocument(@PathVariable("document_id") Long documentID, @RequestBody UpdateDocumentRequest request) {
+        Optional<Document> existingDocumentOptional = documentService.getDocument(documentID);
+
+        if (existingDocumentOptional.isPresent()) {
+            Document existingDocument = existingDocumentOptional.get();
+              if (existingDocument.getUsername().equals(authService.getCurrentUser().getUsername())) {
+                if (request.getFileName() != null) {
+                    existingDocument.setFileName(request.getFileName());
+                }
+                if (request.getTitle() != null) {
+                    existingDocument.setTitle(request.getTitle());
+                }
+                if (request.getTripId() != null) {
+                    existingDocument.setTrip(tripService.getTrip(request.getTripId()).orElse(null));
+                }
+
+                documentService.updateDocument(existingDocument);
+
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        } else {
+                return ResponseEntity.notFound().build();
+        }
+    }
 
 }
