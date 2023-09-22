@@ -1,6 +1,7 @@
 package app.TravelGo.Document;
 
 import app.TravelGo.Trip.Trip;
+import app.TravelGo.User.User;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import javax.persistence.*;
@@ -31,5 +32,7 @@ public class Document implements Serializable {
     @JoinColumn(name = "trip_id")
     private Trip trip;
 
+    @Column(name = "username")
+    private String username;
 
 }

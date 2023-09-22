@@ -30,6 +30,7 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    public Optional<User> getUserByUsername(String username) { return userRepository.findByUsername(username); }
     public boolean hasRole(Long userId, String searchedRole) {
         User user = this.getUser(userId).get();
 

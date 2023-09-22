@@ -18,4 +18,5 @@ public class GetDocumentResponse {
     private String file_name;
     private String title;
     private Long trip_id;
+    private String username;
 }

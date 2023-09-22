@@ -30,4 +30,8 @@ public class DocumentService {
         }
         return false;
     }
+
+    public List<Document> getAllDocuments() {
+        return documentRepository.findAll();
+    }
 }

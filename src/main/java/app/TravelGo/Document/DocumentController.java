@@ -2,6 +2,9 @@ package app.TravelGo.Document;
 
 import app.TravelGo.Trip.Trip;
 import app.TravelGo.Trip.TripService;
+import app.TravelGo.User.Auth.AuthService;
+import app.TravelGo.User.User;
+import app.TravelGo.User.UserService;
 import app.TravelGo.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -21,28 +26,74 @@ public class DocumentController {
     final private DocumentService documentService;
     final private TripService tripService;
 
+    final private UserService userService;
+
+    final private AuthService authService;
+
     @Autowired
-    public DocumentController(DocumentService documentService, TripService tripService) {
+    public DocumentController(DocumentService documentService, TripService tripService, UserService userService, AuthService authService) {
         this.documentService = documentService;
         this.tripService = tripService;
+        this.userService = userService;
+        this.authService = authService;
     }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<List<GetDocumentResponse>> getDocuments() {
+        List<Document> documents = documentService.getAllDocuments();
+        if (!documents.isEmpty()) {
+            List<GetDocumentResponse> documentResponses = new ArrayList<>();
+
+            for (Document document : documents) {
+                Optional<User> user = userService.getUserByUsername(document.getUsername());
+                if(user.isPresent() && Objects.equals(user.get().getId(), authService.getCurrentUserId())){
+
+                GetDocumentResponse documentResponse = GetDocumentResponse.builder()
+                        .id(document.getId())
+                        .file_name(document.getFileName())
+                        .title(document.getTitle())
+                        .trip_id(document.getTrip().getId())
+                        .username(user.get().getUsername())
+                        .build();
+
+                documentResponses.add(documentResponse);
+                }
+            }
+
+            return ResponseEntity.ok(documentResponses);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
+    }
+
 
     @GetMapping("/{document_id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetDocumentResponse> getDocument(@PathVariable("document_id") Long docuemntID) {
-        Optional<Document> response = documentService.getDocument(docuemntID);
-        if (response.isPresent()) {
-            Document document = response.get();
-            GetDocumentResponse documentResponse = GetDocumentResponse.builder()
-                    .id(document.getId())
-                    .file_name(document.getFileName())
-                    .title(document.getTitle())
-                    .trip_id(document.getTrip().getId())
-                    .build();
-            return ResponseEntity.ok(documentResponse);
+    public ResponseEntity<GetDocumentResponse> getDocument(@PathVariable("document_id") Long documentID) {
+            Optional<Document> response = documentService.getDocument(documentID);
+
+            if (response.isPresent()) {
+                Document document = response.get();
+                Optional<User> user = userService.getUserByUsername(document.getUsername());
+                if(user.isPresent() && Objects.equals(user.get().getId(), authService.getCurrentUserId())) {
+                    GetDocumentResponse documentResponse = GetDocumentResponse.builder()
+                            .id(document.getId())
+                            .file_name(document.getFileName())
+                            .title(document.getTitle())
+                            .trip_id(document.getTrip().getId())
+                            .username(document.getUsername())
+                            .build();
+                    return ResponseEntity.ok(documentResponse);
+                }
+                else {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new GetDocumentResponse());
+                }
+            } else {
+                return ResponseEntity.notFound().build();
+            }
         }
-        return ResponseEntity.notFound().build();
-    }
+
 
 
     @DeleteMapping("/{document_id}")
@@ -59,20 +110,24 @@ public class DocumentController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> createDocument(@RequestBody CreateDocumentRequest request, UriComponentsBuilder builder) {
+        Optional<Trip> trip = tripService.getTrip(request.getTripId());
 
-            Optional<Trip> trip = tripService.getTrip(request.getTripId());
-            if (trip.isPresent()) {
-                Document document = Document.builder()
-                        .fileName(request.getFileName())
-                        .title(request.getTitle())
-                        .trip(trip.get())
-                        .build();
-                documentService.createDocument(document);
-                return ResponseEntity.created(builder.pathSegment("api", "documents", "{id}")
-                        .buildAndExpand(document.getId()).toUri()).build();
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+        if (trip.isPresent()) {
+            Document document = Document.builder()
+                    .fileName(request.getFileName())
+                    .title(request.getTitle())
+                    .trip(trip.get())
+                    .username(request.getUsername())
+                    .build();
+
+            documentService.createDocument(document);
+
+            return ResponseEntity.created(builder.pathSegment("api", "documents", "{id}")
+                    .buildAndExpand(document.getId()).toUri()).build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
+
 
 }

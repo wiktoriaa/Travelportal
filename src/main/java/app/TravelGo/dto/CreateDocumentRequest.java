@@ -11,5 +11,6 @@ public class CreateDocumentRequest {
     private String fileName;
     private String title;
     private Long tripId;
+    private String username;
 
 }
