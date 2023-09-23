@@ -28,13 +28,17 @@ public class Post implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "user_id")
-    private Long user;
+    private String username;
 
     private int status;
+
     private int likes;
 
-    @CreationTimestamp
+    private String about;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

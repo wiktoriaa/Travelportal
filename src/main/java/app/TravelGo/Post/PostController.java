@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
@@ -44,7 +45,9 @@ public class PostController {
                     .id(post.getId())
                     .title(post.getTitle())
                     .content(post.getContent())
-                    .userId(post.getUser())
+                    .username(post.getUsername())
+                    .about(post.getAbout())
+                    .createdAt(post.getCreatedAt())
                     .likes(post.getLikes())
                     .build();
             return ResponseEntity.ok(postResponse);
@@ -56,10 +59,11 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> deletePost(@PathVariable("post_id") Long postId) {
 
-        Long userId = this.authService.getCurrentUserId();
-        Long postOwnerId = postService.getPost(postId).orElse(null).getUser();
+        String username = this.authService.getCurrentUser().getUsername();
+        Long userID = this.authService.getCurrentUser().getId();
+        String postOwnerUsername = postService.getPost(postId).orElse(null).getUsername();
 
-        if (userId.equals(postOwnerId) || userService.hasRole(userId, "MODERATOR")) { // TODO: sprawdzić te "=="
+        if (username.equals(postOwnerUsername) || userService.hasRole(userID, "MODERATOR")) {
             boolean success = postService.deletePost(postId);
             if (success) {
                 return ResponseEntity.ok().build();
@@ -77,7 +81,10 @@ public class PostController {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .likes(0)
-                .user(this.authService.getCurrentUserId())
+                .username(this.authService.getCurrentUser().getUsername())
+                .about(request.getAbout())
+                .updatedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .status(request.getStatus())
                 .build();
 
