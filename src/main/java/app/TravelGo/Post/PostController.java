@@ -1,9 +1,12 @@
 package app.TravelGo.Post;
 
+import app.TravelGo.Post.Like.LikeService;
 import app.TravelGo.User.Auth.AuthService;
+import app.TravelGo.User.User;
 import app.TravelGo.User.UserService;
 import app.TravelGo.dto.CreatePostRequest;
 import app.TravelGo.dto.GetPostResponse;
+import app.TravelGo.dto.LikeRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +23,15 @@ public class PostController {
     private final PostService postService;
     private final UserService userService;
     private final AuthService authService;
+    private final LikeService likeService;
 
     @Autowired
-    public PostController(PostService postService, UserService userService, AuthService authService) {
+    public PostController(PostService postService, UserService userService, AuthService authService,
+                          LikeService likeService) {
         this.postService = postService;
         this.userService = userService;
         this.authService = authService;
+        this.likeService = likeService;
     }
 
     @GetMapping
@@ -94,4 +100,23 @@ public class PostController {
                 .buildAndExpand(post.getId()).toUri()).build();
     }
 
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<String> likePost(@RequestBody LikeRequest request) {
+        User currentUser = authService.getCurrentUser();
+        Post likedPost = postService.getPost(request.getPostId()).orElse(null);
+
+        if (likeService.isPostLikedByUser(currentUser, likedPost)) {
+            return ResponseEntity.ok("Post already liked");
+        }
+        else if (likedPost != null){
+            likeService.likePost(currentUser, likedPost);
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{postId}/unlike")
+    public ResponseEntity<String> unlikePost(@RequestBody LikeRequest request) {
+        return ResponseEntity.ok().build();
+    }
 }
