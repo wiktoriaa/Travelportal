@@ -45,7 +45,7 @@ public class CommentController {
             GetCommentResponse commentResponse = GetCommentResponse.builder()
                     .id(comment.getId())
                     .content(comment.getContent())
-                    .userID(comment.getUserID())
+                    .username(comment.getUsername())
                     .post(comment.getPostId())
                     .build();
             commentResponses.add(commentResponse);
@@ -62,7 +62,7 @@ public class CommentController {
         if (post.isPresent()) {
             Comment comment = Comment.builder()
                     .content(request.getContent())
-                    .userID(this.authService.getCurrentUserId())
+                    .username(this.authService.getCurrentUser().getUsername())
                     .postId(post.get().getId())
                     .createdAt(LocalDateTime.now())
                     .build();
@@ -85,7 +85,7 @@ public class CommentController {
             GetCommentResponse commentResponse = GetCommentResponse.builder()
                     .id(comment.getId())
                     .content(comment.getContent())
-                    .userID(comment.getUserID())
+                    .username(comment.getUsername())
                     .post(comment.getPostId())
                     .build();
             return ResponseEntity.ok(commentResponse);
@@ -98,10 +98,10 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(@PathVariable("post_id") Long postId, @PathVariable("comment_id") Long commentId) {
         Optional<Comment> commentResponse = commentService.getComment(commentId);
         if (commentResponse.isPresent() && commentResponse.get().getPostId().equals(postId)) {
-            Long userId = this.authService.getCurrentUserId();
-            Long commentOwnerId = commentResponse.get().getUserID();
+            String username = this.authService.getCurrentUser().getUsername();
+            String commentOwnerUsername = commentResponse.get().getUsername();
 
-            if (userId.equals(commentOwnerId) || userService.hasRole(userId, "MODERATOR")) {
+            if (username.equals(commentOwnerUsername) || userService.hasRole(this.authService.getCurrentUserId(), "MODERATOR")) {
                 boolean success = commentService.deleteComment(commentId);
                 if (success) {
                     return ResponseEntity.ok().build();

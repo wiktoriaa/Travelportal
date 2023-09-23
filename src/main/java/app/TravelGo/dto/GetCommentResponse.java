@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class GetCommentResponse {
     private Long id;
     private String content;
-    private Long userID;
+    private String username;
     private Long post;
 }

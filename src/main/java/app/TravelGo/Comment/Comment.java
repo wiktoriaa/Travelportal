@@ -27,8 +27,7 @@ public class Comment implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "user_id")
-    private Long userID;
+    private String username;
 
     @Column(name = "post_id")
     private Long postId;
