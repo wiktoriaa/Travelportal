@@ -5,6 +5,8 @@ import app.TravelGo.User.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+
 @Service
 public class LikeService {
     private final LikeRepository likeRepository;
@@ -26,7 +28,8 @@ public class LikeService {
         likeRepository.save(like);
     }
 
+    @Transactional
     public void unlikePost(User user, Post post) {
-      //  likeRepository.deleteByUserAndPost(user, post);
+      likeRepository.deleteByUserAndPost(user, post);
     }
 }

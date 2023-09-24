@@ -117,6 +117,10 @@ public class PostController {
 
     @PostMapping("/{postId}/unlike")
     public ResponseEntity<String> unlikePost(@RequestBody LikeRequest request) {
+        User currentUser = authService.getCurrentUser();
+        Post likedPost = postService.getPost(request.getPostId()).orElse(null);
+
+        likeService.unlikePost(currentUser, likedPost);
         return ResponseEntity.ok().build();
     }
 }
