@@ -32,4 +32,8 @@ public class LikeService {
     public void unlikePost(User user, Post post) {
       likeRepository.deleteByUserAndPost(user, post);
     }
+
+    public Long getLikesCountForPost(Post post) {
+        return likeRepository.countByPost(post);
+    }
 }

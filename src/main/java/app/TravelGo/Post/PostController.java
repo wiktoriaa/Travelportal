@@ -123,4 +123,12 @@ public class PostController {
         likeService.unlikePost(currentUser, likedPost);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/{postId}/likes")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Long> getPostLikes(@PathVariable("postId") Long postId) {
+        Post post = postService.getPost(postId).orElse(null);
+        long likesCount = likeService.getLikesCountForPost(post);
+        return ResponseEntity.ok(likesCount);
+    }
 }
