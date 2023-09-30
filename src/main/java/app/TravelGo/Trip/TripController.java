@@ -34,10 +34,10 @@ public class TripController {
             GetTripResponse tripResponse = GetTripResponse.builder()
                     .id(trip.getId())
                     .date(trip.getDate())
-                    .gathering_place(trip.getGatheringPlace())
-                    .trip_name(trip.getTripName())
+                    .gatheringPlace(trip.getGatheringPlace())
+                    .tripName(trip.getTripName())
                     .rate(trip.getRate())
-                    .number_of_rates(trip.getNumberOfRates())
+                    .numberOfRates(trip.getNumberOfRates())
                     .archived(trip.getArchived())
                     .build();
             return ResponseEntity.ok(tripResponse);
@@ -58,10 +58,10 @@ public class TripController {
                     GetTripResponse tripResponse = GetTripResponse.builder()
                             .id(trip.getId())
                             .date(trip.getDate())
-                            .gathering_place(trip.getGatheringPlace())
-                            .trip_name(trip.getTripName())
+                            .gatheringPlace(trip.getGatheringPlace())
+                            .tripName(trip.getTripName())
                             .rate(trip.getRate())
-                            .number_of_rates(trip.getNumberOfRates())
+                            .numberOfRates(trip.getNumberOfRates())
                             .archived(trip.getArchived())
                             .build();
 
@@ -81,8 +81,8 @@ public class TripController {
     public ResponseEntity<Void> createTrip(@RequestBody CreateTripRequest request, UriComponentsBuilder builder) {
         Trip trip = Trip.builder()
                 .date(request.getDate())
-                .tripName(request.getTrip_name())
-                .gatheringPlace(request.getGathering_place())
+                .tripName(request.getTripName())
+                .gatheringPlace(request.getGatheringPlace())
                 .rate(0.0)
                 .numberOfRates(0)
                 .archived(false)

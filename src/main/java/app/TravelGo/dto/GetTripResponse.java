@@ -11,9 +11,9 @@ import java.time.LocalDate;
 public class GetTripResponse {
     private Long id;
     private LocalDate date;
-    private String gathering_place;
-    private String trip_name;
+    private String gatheringPlace;
+    private String tripName;
     private Double rate;
-    private Integer number_of_rates;
+    private Integer numberOfRates;
     private Boolean archived;
 }

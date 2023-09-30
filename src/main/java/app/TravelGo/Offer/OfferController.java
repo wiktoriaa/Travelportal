@@ -28,8 +28,8 @@ public class OfferController {
             Offer offer = response.get();
             GetOfferResponse tripResponse = GetOfferResponse.builder()
                     .id(offer.getId())
-                    .start_date(offer.getStartDate())
-                    .end_date(offer.getEndDate())
+                    .startDate(offer.getStartDate())
+                    .endDate(offer.getEndDate())
                     .price(offer.getPrice())
                     .build();
             return ResponseEntity.ok(tripResponse);

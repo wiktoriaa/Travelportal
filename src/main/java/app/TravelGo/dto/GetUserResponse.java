@@ -15,6 +15,6 @@ public class GetUserResponse {
     private String name;
     private String surname;
     private String email;
-    private Integer phone_number;
+    private Integer phoneNumber;
     private Integer privileges;
 }

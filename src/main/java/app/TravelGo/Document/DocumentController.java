@@ -6,8 +6,6 @@ import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.User;
 import app.TravelGo.User.UserService;
 import app.TravelGo.dto.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/documents")
@@ -51,9 +48,9 @@ public class DocumentController {
 
                 GetDocumentResponse documentResponse = GetDocumentResponse.builder()
                         .id(document.getId())
-                        .file_name(document.getFileName())
+                        .fileName(document.getFileName())
                         .title(document.getTitle())
-                        .trip_id(document.getTrip().getId())
+                        .tripId(document.getTrip().getId())
                         .username(user.get().getUsername())
                         .build();
 
@@ -79,9 +76,9 @@ public class DocumentController {
                 if(user.isPresent() && Objects.equals(user.get().getId(), authService.getCurrentUserId())) {
                     GetDocumentResponse documentResponse = GetDocumentResponse.builder()
                             .id(document.getId())
-                            .file_name(document.getFileName())
+                            .fileName(document.getFileName())
                             .title(document.getTitle())
-                            .trip_id(document.getTrip().getId())
+                            .tripId(document.getTrip().getId())
                             .username(document.getUsername())
                             .build();
                     return ResponseEntity.ok(documentResponse);

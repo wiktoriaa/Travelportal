@@ -45,7 +45,7 @@ public class UserController {
                     .name(user.getName())
                     .surname(user.getSurname())
                     .email(user.getEmail())
-                    .phone_number(user.getPhoneNumber())
+                    .phoneNumber(user.getPhoneNumber())
                     .privileges(user.getPrivileges())
                     .build();
             return ResponseEntity.ok(userResponse);
@@ -62,7 +62,7 @@ public class UserController {
                 .name(request.getName())
                 .surname(request.getSurname())
                 .email(request.getEmail())
-                .phoneNumber(request.getPhone_number())
+                .phoneNumber(request.getPhoneNumber())
                 .privileges(request.getPrivileges())
                 .build();
         user = userService.createUser(user);
