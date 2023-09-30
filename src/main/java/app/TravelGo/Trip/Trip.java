@@ -26,15 +26,15 @@ public class Trip implements Serializable {
     private Long id;
 
     private LocalDate date;
-    private String gathering_place;
-    private String trip_name;
+    private String gatheringPlace;
+    private String tripName;
 
     @OneToMany(mappedBy = "trip", fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     @ToString.Exclude
     private List<Document> documents = new ArrayList<>();
 
     private Double rate;
-    private Integer number_of_rates;
+    private Integer numberOfRates;
 
     private Boolean archived;
 }

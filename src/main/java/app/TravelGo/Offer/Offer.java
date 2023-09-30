@@ -22,8 +22,8 @@ public class Offer implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    private LocalDate end_date;
-    private LocalDate start_date;
+    private LocalDate endDate;
+    private LocalDate startDate;
     private int price;
 
 

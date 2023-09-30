@@ -1,13 +1,10 @@
 package app.TravelGo.Offer;
 
-import app.TravelGo.Offer.Offer;
-import app.TravelGo.Trip.TripService;
 import app.TravelGo.dto.GetOfferResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Optional;
 
@@ -31,8 +28,8 @@ public class OfferController {
             Offer offer = response.get();
             GetOfferResponse tripResponse = GetOfferResponse.builder()
                     .id(offer.getId())
-                    .start_date(offer.getStart_date())
-                    .end_date(offer.getEnd_date())
+                    .start_date(offer.getStartDate())
+                    .end_date(offer.getEndDate())
                     .price(offer.getPrice())
                     .build();
             return ResponseEntity.ok(tripResponse);

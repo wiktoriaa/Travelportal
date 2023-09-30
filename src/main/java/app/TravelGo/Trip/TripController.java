@@ -1,17 +1,10 @@
 package app.TravelGo.Trip;
 
-import app.TravelGo.Document.Document;
-import app.TravelGo.Document.DocumentService;
 import app.TravelGo.User.Auth.AuthService;
-import app.TravelGo.User.User;
-import app.TravelGo.User.UserService;
 import app.TravelGo.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -41,10 +34,10 @@ public class TripController {
             GetTripResponse tripResponse = GetTripResponse.builder()
                     .id(trip.getId())
                     .date(trip.getDate())
-                    .gathering_place(trip.getGathering_place())
-                    .trip_name(trip.getTrip_name())
+                    .gathering_place(trip.getGatheringPlace())
+                    .trip_name(trip.getTripName())
                     .rate(trip.getRate())
-                    .number_of_rates(trip.getNumber_of_rates())
+                    .number_of_rates(trip.getNumberOfRates())
                     .archived(trip.getArchived())
                     .build();
             return ResponseEntity.ok(tripResponse);
@@ -65,10 +58,10 @@ public class TripController {
                     GetTripResponse tripResponse = GetTripResponse.builder()
                             .id(trip.getId())
                             .date(trip.getDate())
-                            .gathering_place(trip.getGathering_place())
-                            .trip_name(trip.getTrip_name())
+                            .gathering_place(trip.getGatheringPlace())
+                            .trip_name(trip.getTripName())
                             .rate(trip.getRate())
-                            .number_of_rates(trip.getNumber_of_rates())
+                            .number_of_rates(trip.getNumberOfRates())
                             .archived(trip.getArchived())
                             .build();
 
@@ -88,10 +81,10 @@ public class TripController {
     public ResponseEntity<Void> createTrip(@RequestBody CreateTripRequest request, UriComponentsBuilder builder) {
         Trip trip = Trip.builder()
                 .date(request.getDate())
-                .trip_name(request.getTrip_name())
-                .gathering_place(request.getGathering_place())
+                .tripName(request.getTrip_name())
+                .gatheringPlace(request.getGathering_place())
                 .rate(0.0)
-                .number_of_rates(0)
+                .numberOfRates(0)
                 .archived(false)
                 .build();
         trip = tripService.createTrip(trip);
@@ -129,8 +122,8 @@ public class TripController {
             if (requestBody.containsKey("rate")) {
                 Double rate = requestBody.get("rate");
 
-                Double currentRate = (trip.getNumber_of_rates() * trip.getRate() + rate) / (trip.getNumber_of_rates() + 1);
-                trip.setNumber_of_rates(trip.getNumber_of_rates() + 1);
+                Double currentRate = (trip.getNumberOfRates() * trip.getRate() + rate) / (trip.getNumberOfRates() + 1);
+                trip.setNumberOfRates(trip.getNumberOfRates() + 1);
                 trip.setRate(currentRate);
                 tripService.saveTrip(trip);
 
