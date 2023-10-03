@@ -7,6 +7,7 @@ import app.TravelGo.User.UserService;
 import app.TravelGo.dto.CreatePostRequest;
 import app.TravelGo.dto.GetPostResponse;
 import app.TravelGo.dto.LikeRequest;
+import app.TravelGo.dto.SimpleStringMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -101,12 +102,12 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<String> likePost(@RequestBody LikeRequest request) {
+    public ResponseEntity<SimpleStringMessage> likePost(@RequestBody LikeRequest request) {
         User currentUser = authService.getCurrentUser();
         Post likedPost = postService.getPost(request.getPostId()).orElse(null);
 
         if (likeService.isPostLikedByUser(currentUser, likedPost)) {
-            return ResponseEntity.ok("Post already liked");
+            return ResponseEntity.ok(new SimpleStringMessage("Post already liked"));
         }
         else if (likedPost != null){
             likeService.likePost(currentUser, likedPost);

@@ -113,7 +113,7 @@ public class TripController {
 
     @PostMapping("/{trip_id}/rate")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> rateTrip(@PathVariable("trip_id") Long tripId, @RequestBody Map<String, Double> requestBody) {
+    public ResponseEntity<SimpleStringMessage> rateTrip(@PathVariable("trip_id") Long tripId, @RequestBody Map<String, Double> requestBody) {
         Optional<Trip> optionalTrip = tripService.getTrip(tripId);
 
         if (optionalTrip.isPresent()) {
@@ -127,9 +127,9 @@ public class TripController {
                 trip.setRate(currentRate);
                 tripService.saveTrip(trip);
 
-                return ResponseEntity.ok("Rate was added. Current rate is now " + trip.getRate());
+                return ResponseEntity.ok(new SimpleStringMessage("Rate was added. Current rate is now " + trip.getRate()));
             } else {
-                return ResponseEntity.badRequest().body("Rate field is missing in the request JSON.");
+                return ResponseEntity.badRequest().body(new SimpleStringMessage("Rate field is missing in the request JSON."));
             }
         } else {
             return ResponseEntity.notFound().build();

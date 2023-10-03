@@ -6,6 +6,7 @@ import app.TravelGo.User.User;
 import app.TravelGo.User.UserRepository;
 import app.TravelGo.dto.Auth.AuthRequest;
 import app.TravelGo.dto.Auth.AuthResponse;
+import app.TravelGo.dto.SimpleStringMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,12 +63,12 @@ public class AuthController {
 
         // add check for username exists in a DB
         if (userRepository.existsByUsername(signUpDto.getUsername())) {
-            return new ResponseEntity<>("Username is already taken!", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new SimpleStringMessage("Username is already taken!"), HttpStatus.BAD_REQUEST);
         }
 
         // add check for email exists in DB
         if (userRepository.existsByEmail(signUpDto.getEmail())) {
-            return new ResponseEntity<>("Email is already taken!", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new SimpleStringMessage("Email is already taken!"), HttpStatus.BAD_REQUEST);
         }
 
         // create user object
@@ -82,7 +83,7 @@ public class AuthController {
 
         userRepository.save(user);
 
-        return new ResponseEntity<>("User registered successfully", HttpStatus.OK);
+        return new ResponseEntity<>(new SimpleStringMessage("User registered successfully"), HttpStatus.OK);
 
     }
 }
