@@ -1,16 +1,23 @@
 package app.TravelGo.dto.Auth;
 
+import app.TravelGo.User.Role.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Set;
+
 public class AuthResponse {
-    @JsonProperty("email")
-    private String email;
+    @JsonProperty("id")
+    private Long id;
 
     @JsonProperty("accessToken")
     private String accessToken;
 
-    public AuthResponse(String email, String accessToken) {
-        this.email = email;
+    @JsonProperty("roles")
+    private Set<Role> roles;
+
+    public AuthResponse(Long id, Set<Role> roles, String accessToken) {
+        this.id = id;
         this.accessToken = accessToken;
+        this.roles = roles;
     }
 }

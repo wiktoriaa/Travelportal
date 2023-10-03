@@ -49,7 +49,7 @@ public class AuthController {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
             String accessToken = jwtUtil.generateAccessToken(user);
-            AuthResponse response = new AuthResponse(user.getEmail(), accessToken);
+            AuthResponse response = new AuthResponse(user.getId(), user.getRoles(), accessToken);
 
             return ResponseEntity.ok().body(response);
 
