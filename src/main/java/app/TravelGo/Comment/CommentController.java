@@ -46,6 +46,7 @@ public class CommentController {
                     .id(comment.getId())
                     .content(comment.getContent())
                     .username(comment.getUsername())
+                    .userID(userService.getUserByUsername(comment.getUsername()).get().getId())
                     .post(comment.getPostId())
                     .build();
             commentResponses.add(commentResponse);
@@ -86,6 +87,7 @@ public class CommentController {
                     .id(comment.getId())
                     .content(comment.getContent())
                     .username(comment.getUsername())
+                    .userID(userService.getUserByUsername(comment.getUsername()).get().getId())
                     .post(comment.getPostId())
                     .build();
             return ResponseEntity.ok(commentResponse);

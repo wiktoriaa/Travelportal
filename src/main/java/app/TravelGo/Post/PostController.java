@@ -4,10 +4,7 @@ import app.TravelGo.Post.Like.LikeService;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.User;
 import app.TravelGo.User.UserService;
-import app.TravelGo.dto.CreatePostRequest;
-import app.TravelGo.dto.GetPostResponse;
-import app.TravelGo.dto.LikeRequest;
-import app.TravelGo.dto.SimpleStringMessage;
+import app.TravelGo.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -37,10 +36,28 @@ public class PostController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public @ResponseBody
-    Iterable<Post> getAllPosts() {
-        return postService.getPosts();
+    public ResponseEntity<List<GetPostResponse>> getAllPosts() {
+        List<Post> posts = postService.getPosts();
+        List<GetPostResponse> postResponses = new ArrayList<>();
+
+        for (Post post : posts) {
+            GetPostResponse postResponse = GetPostResponse.builder()
+                    .id(post.getId())
+                    .title(post.getTitle())
+                    .content(post.getContent())
+                    .username(post.getUsername())
+                    .userID(userService.getUserByUsername(post.getUsername()).get().getId())
+                    .about(post.getAbout())
+                    .createdAt(post.getCreatedAt())
+                    .likes(post.getLikes())
+                    .build();
+            postResponses.add(postResponse);
+        }
+
+        return ResponseEntity.ok(postResponses);
     }
+
+
 
     @GetMapping("/{post_id}")
     @ResponseStatus(HttpStatus.OK)
@@ -53,6 +70,7 @@ public class PostController {
                     .title(post.getTitle())
                     .content(post.getContent())
                     .username(post.getUsername())
+                    .userID(userService.getUserByUsername(post.getUsername()).get().getId())
                     .about(post.getAbout())
                     .createdAt(post.getCreatedAt())
                     .likes(post.getLikes())

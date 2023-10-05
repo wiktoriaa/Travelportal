@@ -13,5 +13,6 @@ public class GetCommentResponse {
     private Long id;
     private String content;
     private String username;
+    private Long userID;
     private Long post;
 }

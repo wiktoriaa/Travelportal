@@ -16,6 +16,7 @@ public class GetPostResponse {
     private String title;
     private String content;
     private String username;
+    private Long userID;
     private String about;
     private LocalDateTime createdAt;
     private String status;
