@@ -41,6 +41,10 @@ public class PostController {
         List<GetPostResponse> postResponses = new ArrayList<>();
 
         for (Post post : posts) {
+            if (post.getType() != PostType.DISCUSSION) {
+                continue;
+            }
+
             GetPostResponse postResponse = GetPostResponse.builder()
                     .id(post.getId())
                     .title(post.getTitle())
@@ -110,7 +114,8 @@ public class PostController {
                 .about(request.getAbout())
                 .updatedAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
-                .status(request.getStatus())
+                .type(PostType.DISCUSSION)
+                .trip(null)
                 .build();
 
         post = postService.createPost(post);

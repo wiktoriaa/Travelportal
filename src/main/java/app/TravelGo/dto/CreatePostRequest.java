@@ -14,6 +14,5 @@ public class CreatePostRequest {
     private String content;
     private String username;
     private String about;
-    private Integer status;
     private Integer likes;
 }

@@ -1,8 +1,10 @@
 package app.TravelGo.Post;
 
+import app.TravelGo.Trip.Trip;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -30,7 +32,12 @@ public class Post implements Serializable {
 
     private String username;
 
-    private int status;
+    private PostType type;
+
+    @ManyToOne
+    @JoinColumn(name="trip_id")
+    @NotFound(action= NotFoundAction.IGNORE)
+    private Trip trip;
 
     private int likes;
 
@@ -44,3 +51,4 @@ public class Post implements Serializable {
 
 
 }
+

@@ -1,6 +1,7 @@
 package app.TravelGo.Trip;
 
 import app.TravelGo.Document.Document;
+import app.TravelGo.Post.Post;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -32,6 +33,9 @@ public class Trip implements Serializable {
     @OneToMany(mappedBy = "trip", fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     @ToString.Exclude
     private List<Document> documents = new ArrayList<>();
+
+    @OneToMany@JoinColumn(name = "post_id")
+    private List<Post> posts = new ArrayList<>();
 
     private Double rate;
     private Integer numberOfRates;
