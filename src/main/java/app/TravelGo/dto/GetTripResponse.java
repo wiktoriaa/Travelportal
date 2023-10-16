@@ -3,6 +3,7 @@ package app.TravelGo.dto;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -16,4 +17,5 @@ public class GetTripResponse {
     private Double rate;
     private Integer numberOfRates;
     private Boolean archived;
+    private List<String> participants;
 }

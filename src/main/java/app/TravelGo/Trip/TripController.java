@@ -1,6 +1,8 @@
 package app.TravelGo.Trip;
 
 import app.TravelGo.User.Auth.AuthService;
+import app.TravelGo.User.User;
+import app.TravelGo.User.UserService;
 import app.TravelGo.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,10 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/trips")
@@ -19,10 +19,13 @@ public class TripController {
     private final TripService tripService;
     private final AuthService authService;
 
+    private final UserService userService;
+
     @Autowired
-    public TripController(TripService tripService, AuthService authService)  {
+    public TripController(TripService tripService, AuthService authService, UserService userService)  {
         this.tripService = tripService;
         this.authService = authService;
+        this.userService = userService;
     }
 
     @GetMapping("/{trip_id}")
@@ -31,6 +34,10 @@ public class TripController {
         Optional<Trip> response = tripService.getTrip(tripId);
         if (response.isPresent()) {
             Trip trip = response.get();
+            List<String> participantNames = trip.getParticipants().stream()
+                    .map(User::getUsername)
+                    .collect(Collectors.toList());
+
             GetTripResponse tripResponse = GetTripResponse.builder()
                     .id(trip.getId())
                     .date(trip.getDate())
@@ -39,11 +46,14 @@ public class TripController {
                     .rate(trip.getRate())
                     .numberOfRates(trip.getNumberOfRates())
                     .archived(trip.getArchived())
+                    .participants(participantNames)
                     .build();
+
             return ResponseEntity.ok(tripResponse);
         }
         return ResponseEntity.notFound().build();
     }
+
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -54,6 +64,9 @@ public class TripController {
             List<GetTripResponse> tripResponses = new ArrayList<>();
 
             for (Trip trip : trips) {
+                List<String> participantNames = trip.getParticipants().stream()
+                        .map(User::getUsername)
+                        .collect(Collectors.toList());
                 if(!trip.getArchived()){
                     GetTripResponse tripResponse = GetTripResponse.builder()
                             .id(trip.getId())
@@ -63,6 +76,7 @@ public class TripController {
                             .rate(trip.getRate())
                             .numberOfRates(trip.getNumberOfRates())
                             .archived(trip.getArchived())
+                            .participants(participantNames)
                             .build();
 
                     tripResponses.add(tripResponse);
@@ -86,6 +100,7 @@ public class TripController {
                 .rate(0.0)
                 .numberOfRates(0)
                 .archived(false)
+                .participants(new HashSet<>())
                 .build();
         trip = tripService.createTrip(trip);
         return ResponseEntity.created(builder.pathSegment("api", "trips", "{id}")
@@ -100,7 +115,6 @@ public class TripController {
 
         if (existingTripOptional.isPresent() && authService.getCurrentUser().hasRole("MODERATOR")) {
             Trip existingTrip = existingTripOptional.get();
-
 
             tripService.deleteTrip(existingTrip.getId());
 
@@ -151,6 +165,36 @@ public class TripController {
             }
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/{tripId}/enroll")
+    public ResponseEntity<String> enrollToTrip(@PathVariable("tripId") Long tripId) {
+        Optional<Trip> tripOptional = tripService.getTrip(tripId);
+
+        if (tripOptional.isPresent()) {
+            Trip trip = tripOptional.get();
+
+            User user = authService.getCurrentUser();
+
+            if (user != null) {
+
+                if (trip.getParticipants().contains(user)) {
+                    return ResponseEntity.badRequest().body("User is already enrolled to that trip.");
+                }
+
+                trip.getParticipants().add(user);
+                tripService.saveTrip(trip);
+
+                user.getEnrolledTrips().add(trip);
+                userService.saveUser(user);
+
+                return ResponseEntity.ok("User successfully enrolled to trip.");
+            } else {
+                return ResponseEntity.badRequest().body("Can't find user.");
+            }
+        } else {
+            return ResponseEntity.badRequest().body("Can't find trip.");
+        }
     }
 
 }

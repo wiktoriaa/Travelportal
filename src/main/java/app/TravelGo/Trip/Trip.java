@@ -2,14 +2,14 @@ package app.TravelGo.Trip;
 
 import app.TravelGo.Document.Document;
 import app.TravelGo.Post.Post;
+import app.TravelGo.User.User;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Getter
 @Setter
@@ -41,4 +41,21 @@ public class Trip implements Serializable {
     private Integer numberOfRates;
 
     private Boolean archived;
+
+    @ManyToMany(mappedBy = "enrolledTrips", fetch = FetchType.LAZY)
+    @ToString.Exclude
+    private Set<User> participants = new HashSet<>();
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Trip trip = (Trip) obj;
+        return Objects.equals(id, trip.id);
+    }
 }
