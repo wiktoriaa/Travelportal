@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("api/documents")
+@RequestMapping("api/")
 public class DocumentController {
     final private DocumentService documentService;
     final private TripService tripService;
@@ -35,7 +35,7 @@ public class DocumentController {
         this.authService = authService;
     }
 
-    @GetMapping
+    @GetMapping("trips/{trip_id}/documents")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<GetDocumentResponse>> getDocuments() {
         List<Document> documents = documentService.getAllDocuments();
@@ -44,14 +44,16 @@ public class DocumentController {
 
             for (Document document : documents) {
                 Optional<User> user = userService.getUserByUsername(document.getUsername());
-                if(user.isPresent() && Objects.equals(user.get().getId(), authService.getCurrentUserId())){
+                if ((user.isPresent() && Objects.equals(user.get().getId(), authService.getCurrentUserId())) ||
+                        (authService.getCurrentUser().hasRole("GUIDE") &&
+                                Objects.equals(document.getTrip().getTripGuide().getId(), authService.getCurrentUserId()))) {
 
-                GetDocumentResponse documentResponse = GetDocumentResponse.builder()
+                    GetDocumentResponse documentResponse = GetDocumentResponse.builder()
                         .id(document.getId())
                         .fileName(document.getFileName())
                         .title(document.getTitle())
                         .tripId(document.getTrip().getId())
-                        .username(user.get().getUsername())
+                        .username(document.getUsername())
                         .build();
 
                 documentResponses.add(documentResponse);
@@ -64,16 +66,20 @@ public class DocumentController {
         }
     }
 
-
-    @GetMapping("/{document_id}")
+    @GetMapping("trips/{trip_id}/documents/{document_id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<GetDocumentResponse> getDocument(@PathVariable("document_id") Long documentID) {
-            Optional<Document> response = documentService.getDocument(documentID);
+    public ResponseEntity<GetDocumentResponse> getDocument(@PathVariable("trip_id") Long tripId, @PathVariable("document_id") Long documentID) {
+        Optional<Trip> tripOptional = tripService.getTrip(tripId);
 
-            if (response.isPresent()) {
-                Document document = response.get();
+        if (tripOptional.isPresent()) {
+            Trip trip = tripOptional.get();
+            Optional<Document> documentOptional = documentService.getDocument(documentID);
+
+            if (documentOptional.isPresent() && documentOptional.get().getTrip().equals(trip)) {
+                Document document = documentOptional.get();
                 Optional<User> user = userService.getUserByUsername(document.getUsername());
-                if(user.isPresent() && Objects.equals(user.get().getId(), authService.getCurrentUserId())) {
+
+                if (user.isPresent() && Objects.equals(user.get().getId(), authService.getCurrentUserId())) {
                     GetDocumentResponse documentResponse = GetDocumentResponse.builder()
                             .id(document.getId())
                             .fileName(document.getFileName())
@@ -82,34 +88,41 @@ public class DocumentController {
                             .username(document.getUsername())
                             .build();
                     return ResponseEntity.ok(documentResponse);
-                }
-                else {
+                } else {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new GetDocumentResponse());
                 }
             } else {
                 return ResponseEntity.notFound().build();
             }
+        } else {
+            return ResponseEntity.notFound().build();
         }
+    }
 
-
-
-    @DeleteMapping("/{document_id}")
+    @DeleteMapping("trips/{trip_id}/documents/{document_id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> deleteDocument(@PathVariable("document_id") Long documentID) {
-        boolean success = documentService.deleteDocument(documentID);
-        if (success) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Void> deleteDocument(@PathVariable("trip_id") Long tripId, @PathVariable("document_id") Long documentID) {
+        Optional<Trip> trip = tripService.getTrip(tripId);
+
+        if (trip.isPresent() && (Objects.equals(trip.get().getTripGuide().getId(), authService.getCurrentUserId()) || authService.getCurrentUser().hasRole("MODERATOR")))
+        {
+
+            boolean success = documentService.deleteDocument(documentID);
+            if (success) {
+                return ResponseEntity.ok().build();
+            }
+            return ResponseEntity.notFound().build();
+        } return ResponseEntity.notFound().build();
+
     }
 
 
-    @PostMapping
+    @PostMapping("trips/{trip_id}/documents")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Void> createDocument(@RequestBody CreateDocumentRequest request, UriComponentsBuilder builder) {
-        Optional<Trip> trip = tripService.getTrip(request.getTripId());
+    public ResponseEntity<Void> createDocument(@PathVariable("trip_id") Long tripId, @RequestBody CreateDocumentRequest request, UriComponentsBuilder builder) {
+        Optional<Trip> trip = tripService.getTrip(tripId);
 
-        if (trip.isPresent()) {
+        if (trip.isPresent() && Objects.equals(trip.get().getTripGuide().getId(), authService.getCurrentUserId())) {
             Document document = Document.builder()
                     .fileName(request.getFileName())
                     .title(request.getTitle())
@@ -123,35 +136,6 @@ public class DocumentController {
                     .buildAndExpand(document.getId()).toUri()).build();
         } else {
             return ResponseEntity.notFound().build();
-        }
-    }
-
-    @PutMapping("/{document_id}")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Void> updateDocument(@PathVariable("document_id") Long documentID, @RequestBody UpdateDocumentRequest request) {
-        Optional<Document> existingDocumentOptional = documentService.getDocument(documentID);
-
-        if (existingDocumentOptional.isPresent()) {
-            Document existingDocument = existingDocumentOptional.get();
-              if (existingDocument.getUsername().equals(authService.getCurrentUser().getUsername())) {
-                if (request.getFileName() != null) {
-                    existingDocument.setFileName(request.getFileName());
-                }
-                if (request.getTitle() != null) {
-                    existingDocument.setTitle(request.getTitle());
-                }
-                if (request.getTripId() != null) {
-                    existingDocument.setTrip(tripService.getTrip(request.getTripId()).orElse(null));
-                }
-
-                documentService.updateDocument(existingDocument);
-
-                return ResponseEntity.ok().build();
-            } else {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-        } else {
-                return ResponseEntity.notFound().build();
         }
     }
 
