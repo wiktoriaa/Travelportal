@@ -18,4 +18,5 @@ public class GetTripResponse {
     private Integer numberOfRates;
     private Boolean archived;
     private List<String> participants;
+    private Long tripGuideId;
 }

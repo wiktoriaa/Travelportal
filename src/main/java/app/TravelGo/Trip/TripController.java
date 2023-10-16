@@ -47,6 +47,7 @@ public class TripController {
                     .numberOfRates(trip.getNumberOfRates())
                     .archived(trip.getArchived())
                     .participants(participantNames)
+                    .tripGuideId(trip.getTripGuide().getId())
                     .build();
 
             return ResponseEntity.ok(tripResponse);
@@ -77,6 +78,7 @@ public class TripController {
                             .numberOfRates(trip.getNumberOfRates())
                             .archived(trip.getArchived())
                             .participants(participantNames)
+                            .tripGuideId(trip.getTripGuide().getId())
                             .build();
 
                     tripResponses.add(tripResponse);
@@ -93,27 +95,33 @@ public class TripController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> createTrip(@RequestBody CreateTripRequest request, UriComponentsBuilder builder) {
-        Trip trip = Trip.builder()
-                .date(request.getDate())
-                .tripName(request.getTripName())
-                .gatheringPlace(request.getGatheringPlace())
-                .rate(0.0)
-                .numberOfRates(0)
-                .archived(false)
-                .participants(new HashSet<>())
-                .build();
-        trip = tripService.createTrip(trip);
-        return ResponseEntity.created(builder.pathSegment("api", "trips", "{id}")
-                .buildAndExpand(trip.getId()).toUri()).build();
-    }
+        if (authService.getCurrentUser().hasRole("GUIDE")) {
 
+            Trip trip = Trip.builder()
+                    .date(request.getDate())
+                    .tripName(request.getTripName())
+                    .gatheringPlace(request.getGatheringPlace())
+                    .rate(0.0)
+                    .numberOfRates(0)
+                    .archived(false)
+                    .participants(new HashSet<>())
+                    .tripGuide(authService.getCurrentUser())
+                    .build();
+            trip = tripService.createTrip(trip);
+            return ResponseEntity.created(builder.pathSegment("api", "trips", "{id}")
+                    .buildAndExpand(trip.getId()).toUri()).build();
+        }
+        else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
     @DeleteMapping("/{trip_id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> deleteTrip(@PathVariable("trip_id") Long tripId) {
         Optional<Trip> existingTripOptional = tripService.getTrip(tripId);
 
-        if (existingTripOptional.isPresent() && authService.getCurrentUser().hasRole("MODERATOR")) {
+        if (existingTripOptional.isPresent() && (authService.getCurrentUser().hasRole("MODERATOR") || authService.getCurrentUser().hasRole("GUIDE"))) {
             Trip existingTrip = existingTripOptional.get();
 
             tripService.deleteTrip(existingTrip.getId());

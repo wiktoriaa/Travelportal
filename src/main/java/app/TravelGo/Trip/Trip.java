@@ -17,7 +17,6 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
-@EqualsAndHashCode
 @Entity
 @Table(name = "trips")
 public class Trip implements Serializable {
@@ -42,9 +41,14 @@ public class Trip implements Serializable {
 
     private Boolean archived;
 
+    @ManyToOne
+    @JoinColumn(name = "trip_guide_id")
+    private User tripGuide;
+
     @ManyToMany(mappedBy = "enrolledTrips", fetch = FetchType.LAZY)
     @ToString.Exclude
     private Set<User> participants = new HashSet<>();
+
 
     @Override
     public int hashCode() {
