@@ -12,17 +12,13 @@ public class FileStorageConfig {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    @Value("${file.feature-post-images-dir}")
-    private String featuresDir;
-
-    @Value("${file.gallery-dir}")
-    private String galleryDir;
+    @Value("${file.post-images-dir}")
+    private String postsImagesDir;
 
     @Bean
     public void configureFileUploadDirectory() {
         this.dirConfig(uploadDir);
-        this.dirConfig(featuresDir);
-        this.dirConfig(galleryDir);
+        this.dirConfig(postsImagesDir);
     }
 
     private void dirConfig(String dir) {

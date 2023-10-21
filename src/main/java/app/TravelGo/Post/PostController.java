@@ -1,5 +1,6 @@
 package app.TravelGo.Post;
 
+import app.TravelGo.File.FileService;
 import app.TravelGo.Post.Like.LikeService;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.User;
@@ -9,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,14 +27,16 @@ public class PostController {
     private final UserService userService;
     private final AuthService authService;
     private final LikeService likeService;
+    private final FileService fileService;
 
     @Autowired
     public PostController(PostService postService, UserService userService, AuthService authService,
-                          LikeService likeService) {
+                          LikeService likeService, FileService fileService) {
         this.postService = postService;
         this.userService = userService;
         this.authService = authService;
         this.likeService = likeService;
+        this.fileService = fileService;
     }
 
     @GetMapping
@@ -54,14 +59,13 @@ public class PostController {
                     .about(post.getAbout())
                     .createdAt(post.getCreatedAt())
                     .likes(post.getLikes())
+                    .imagesDir("/api/files/posts/" + post.getId())
                     .build();
             postResponses.add(postResponse);
         }
 
         return ResponseEntity.ok(postResponses);
     }
-
-
 
     @GetMapping("/{post_id}")
     @ResponseStatus(HttpStatus.OK)
@@ -78,6 +82,7 @@ public class PostController {
                     .about(post.getAbout())
                     .createdAt(post.getCreatedAt())
                     .likes(post.getLikes())
+                    .imagesDir("/api/files/posts/" + post.getId())
                     .build();
             return ResponseEntity.ok(postResponse);
         }
@@ -105,13 +110,17 @@ public class PostController {
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
     public @ResponseBody
-    ResponseEntity<Void> createPost(@RequestBody CreatePostRequest request, UriComponentsBuilder builder) {
+    ResponseEntity<Void> createPost(@RequestParam("title") String title,
+                                    @RequestParam("content") String content,
+                                    @RequestParam("about") String about,
+                                    @RequestParam(value = "image", required = false) MultipartFile image,
+                                    UriComponentsBuilder builder) throws IOException {
         Post post = Post.builder()
-                .title(request.getTitle())
-                .content(request.getContent())
+                .title(title)
+                .content(content)
                 .likes(0)
                 .username(this.authService.getCurrentUser().getUsername())
-                .about(request.getAbout())
+                .about(about)
                 .updatedAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .type(PostType.DISCUSSION)
@@ -119,6 +128,10 @@ public class PostController {
                 .build();
 
         post = postService.createPost(post);
+
+        if (image != null) {
+            fileService.uploadFeaturePostImage(image, post.getId());
+        }
 
         return ResponseEntity.created(builder.pathSegment("api", "posts", "{id}")
                 .buildAndExpand(post.getId()).toUri()).build();

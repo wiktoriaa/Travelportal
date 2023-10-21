@@ -21,4 +21,5 @@ public class GetPostResponse {
     private LocalDateTime createdAt;
     private String status;
     private Integer likes;
+    private String imagesDir;
 }
