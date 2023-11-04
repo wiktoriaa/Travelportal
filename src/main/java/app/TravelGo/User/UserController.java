@@ -4,9 +4,7 @@ import app.TravelGo.Trip.Trip;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.Role.Role;
 import app.TravelGo.User.Role.RoleRepository;
-import app.TravelGo.dto.CreatePermissionRequest;
-import app.TravelGo.dto.CreateUserRequest;
-import app.TravelGo.dto.GetUserResponse;
+import app.TravelGo.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,7 +54,7 @@ public class UserController {
 
     @GetMapping("/{user_id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> getPost(@PathVariable("user_id") Long userId) {
+    public ResponseEntity<Object> getUser(@PathVariable("user_id") Long userId) {
         Optional<User> response = userService.getUser(userId);
         if (response.isPresent()) {
             User user = response.get();
@@ -147,4 +145,56 @@ public class UserController {
 
         return ResponseEntity.internalServerError().build();
     }
+
+    @GetMapping("/{id}/profile")
+    public ResponseEntity<GetUserProfileResponse> getUserProfile(@PathVariable("id") Long id) {
+        Optional<User> userOptional = userService.getUser(id);
+        if (userOptional.isPresent()) {
+            if(authService.getCurrentUser().equals(userOptional.get())){
+            User user = userOptional.get();
+            GetUserProfileResponse userResponse = GetUserProfileResponse.builder()
+                    .username(user.getUsername())
+                    .name(user.getName())
+                    .surname(user.getSurname())
+                    .email(user.getEmail())
+                    .phoneNumber(user.getPhoneNumber())
+                    .build();
+            return ResponseEntity.ok(userResponse);
+            }
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/{id}/profile")
+    public ResponseEntity<Void> updateProfile(
+            @PathVariable("id") Long id,
+            @RequestBody UpdateUserProfileRequest request
+    ) {
+        Optional<User> userOptional = userService.getUser(id);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            if (authService.getCurrentUser().equals(user)) {
+                if (request.getName() != null) {
+                    user.setName(request.getName());
+                }
+                if (request.getSurname() != null) {
+                    user.setSurname(request.getSurname());
+                }
+                if (request.getEmail() != null) {
+                    user.setEmail(request.getEmail());
+                }
+                if (request.getPhoneNumber() != null) {
+                    user.setPhoneNumber(request.getPhoneNumber());
+                }
+                userService.saveUser(user);
+
+                return ResponseEntity.noContent().build();
+            }
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
 }
