@@ -3,7 +3,9 @@ package app.TravelGo.User;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.Role.Role;
 import app.TravelGo.User.Role.RoleRepository;
-import app.TravelGo.dto.*;
+import app.TravelGo.dto.CreatePermissionRequest;
+import app.TravelGo.dto.CreateUserRequest;
+import app.TravelGo.dto.GetUserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +45,7 @@ public class UserController {
                     .email(user.getEmail())
                     .phoneNumber(user.getPhoneNumber())
                     .privileges(user.getPrivileges())
+                    .roles(user.getRoles())
                     .build();
             usersWithoutPasswords.add(userResponse);
         }
@@ -64,6 +67,7 @@ public class UserController {
                     .email(user.getEmail())
                     .phoneNumber(user.getPhoneNumber())
                     .privileges(user.getPrivileges())
+                    .roles(user.getRoles())
                     .build();
             return ResponseEntity.ok(userResponse);
         }

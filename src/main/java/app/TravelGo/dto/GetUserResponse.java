@@ -1,9 +1,12 @@
 package app.TravelGo.dto;
 
+import app.TravelGo.User.Role.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Set;
 
 @Data
 @Builder
@@ -17,4 +20,5 @@ public class GetUserResponse {
     private String email;
     private Integer phoneNumber;
     private Integer privileges;
+    private Set<Role> roles;
 }
