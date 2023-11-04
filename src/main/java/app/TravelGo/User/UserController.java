@@ -1,5 +1,6 @@
 package app.TravelGo.User;
 
+import app.TravelGo.Trip.Trip;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.Role.Role;
 import app.TravelGo.User.Role.RoleRepository;
@@ -95,14 +96,33 @@ public class UserController {
     @DeleteMapping("/{user_id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> deleteUser(@PathVariable(name = "user_id") Long id) {
-        Optional<User> user = userService.getUser(id);
-        if (user.isPresent()) {
-            userService.deleteUser(user.get().getId());
-            return ResponseEntity.accepted().build();
+        Optional<User> userOptional = userService.getUser(id);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            if(authService.getCurrentUser().equals(user) || authService.getCurrentUser().hasRole("MODERATOR")){
+                user.getRoles().clear();
+
+                for (Trip trip : user.getEnrolledTrips()) {
+                    trip.getParticipants().remove(user);
+                }
+                user.getEnrolledTrips().clear();
+
+                for (Trip trip : user.getGuidedTrips()) {
+                    trip.getTripGuides().remove(user);
+                }
+                user.getGuidedTrips().clear();
+                userService.deleteUser(id);
+
+                return ResponseEntity.accepted().build();
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
         } else {
             return ResponseEntity.notFound().build();
         }
     }
+
 
     @PostMapping("/{user_id}/permission")
     @ResponseStatus(HttpStatus.CREATED)
