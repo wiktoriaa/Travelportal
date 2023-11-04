@@ -3,7 +3,9 @@ package app.TravelGo.Trip;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.User;
 import app.TravelGo.User.UserService;
-import app.TravelGo.dto.*;
+import app.TravelGo.dto.CreateTripRequest;
+import app.TravelGo.dto.GetTripResponse;
+import app.TravelGo.dto.SimpleStringMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +39,9 @@ public class TripController {
             List<String> participantNames = trip.getParticipants().stream()
                     .map(User::getUsername)
                     .collect(Collectors.toList());
+            List<Long> guidesIDs = trip.getTripGuides().stream()
+                    .map(User::getId)
+                    .toList();
 
             GetTripResponse tripResponse = GetTripResponse.builder()
                     .id(trip.getId())
@@ -47,7 +52,7 @@ public class TripController {
                     .numberOfRates(trip.getNumberOfRates())
                     .archived(trip.getArchived())
                     .participants(participantNames)
-                    .tripGuideId(trip.getTripGuide().getId())
+                    .tripGuides(guidesIDs)
                     .build();
 
             return ResponseEntity.ok(tripResponse);
@@ -68,7 +73,11 @@ public class TripController {
                 List<String> participantNames = trip.getParticipants().stream()
                         .map(User::getUsername)
                         .collect(Collectors.toList());
-                if(!trip.getArchived()){
+                List<Long> guidesIDs = trip.getTripGuides().stream()
+                        .map(User::getId)
+                        .toList();
+
+                if (!trip.getArchived()) {
                     GetTripResponse tripResponse = GetTripResponse.builder()
                             .id(trip.getId())
                             .date(trip.getDate())
@@ -78,7 +87,7 @@ public class TripController {
                             .numberOfRates(trip.getNumberOfRates())
                             .archived(trip.getArchived())
                             .participants(participantNames)
-                            .tripGuideId(trip.getTripGuide().getId())
+                            .tripGuides(guidesIDs)
                             .build();
 
                     tripResponses.add(tripResponse);
@@ -96,6 +105,13 @@ public class TripController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> createTrip(@RequestBody CreateTripRequest request, UriComponentsBuilder builder) {
         if (authService.getCurrentUser().hasRole("GUIDE")) {
+            List<User> guidesList = new ArrayList<>();
+            guidesList.add(authService.getCurrentUser());
+            for (Long id : request.getGuidesIDs()) {
+                if (userService.getUser(id).isPresent() && !guidesList.contains(userService.getUser(id).get())) {
+                    guidesList.add(userService.getUser(id).get());
+                }
+            }
 
             Trip trip = Trip.builder()
                     .date(request.getDate())
@@ -105,13 +121,12 @@ public class TripController {
                     .numberOfRates(0)
                     .archived(false)
                     .participants(new HashSet<>())
-                    .tripGuide(authService.getCurrentUser())
+                    .tripGuides(guidesList)
                     .build();
             trip = tripService.createTrip(trip);
             return ResponseEntity.created(builder.pathSegment("api", "trips", "{id}")
                     .buildAndExpand(trip.getId()).toUri()).build();
-        }
-        else {
+        } else {
             return ResponseEntity.badRequest().build();
         }
     }

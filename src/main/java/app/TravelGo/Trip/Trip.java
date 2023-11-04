@@ -41,9 +41,14 @@ public class Trip implements Serializable {
 
     private Boolean archived;
 
-    @ManyToOne
-    @JoinColumn(name = "trip_guide_id")
-    private User tripGuide;
+    @ManyToMany
+    @JoinTable(
+            name = "trip_trip_guide",
+            joinColumns = @JoinColumn(name = "trip_id"),
+            inverseJoinColumns = @JoinColumn(name = "trip_guide_id")
+    )
+    private List<User> tripGuides = new ArrayList<>();
+
 
     @ManyToMany(mappedBy = "enrolledTrips", fetch = FetchType.LAZY)
     @ToString.Exclude

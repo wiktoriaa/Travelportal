@@ -11,10 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
@@ -62,6 +59,10 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "trip_id", referencedColumnName = "id"))
     @JsonIgnore
     private Set<Trip> enrolledTrips = new HashSet<>();
+
+    @ManyToMany(mappedBy = "tripGuides")
+    @ToString.Exclude
+    private List<Trip> guidedTrips = new ArrayList<>();
 
     public void addRole(Role role) {
         if (this.roles == null) {

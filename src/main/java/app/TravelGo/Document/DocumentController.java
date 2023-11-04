@@ -5,7 +5,8 @@ import app.TravelGo.Trip.TripService;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.User;
 import app.TravelGo.User.UserService;
-import app.TravelGo.dto.*;
+import app.TravelGo.dto.CreateDocumentRequest;
+import app.TravelGo.dto.GetDocumentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,26 +38,31 @@ public class DocumentController {
 
     @GetMapping("trips/{trip_id}/documents")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<GetDocumentResponse>> getDocuments() {
+    public ResponseEntity<List<GetDocumentResponse>> getDocuments(@PathVariable("trip_id") Long tripId) {
         List<Document> documents = documentService.getAllDocuments();
         if (!documents.isEmpty()) {
             List<GetDocumentResponse> documentResponses = new ArrayList<>();
 
+
+
             for (Document document : documents) {
-                Optional<User> user = userService.getUserByUsername(document.getUsername());
-                if ((user.isPresent() && Objects.equals(user.get().getId(), authService.getCurrentUserId())) ||
-                        (authService.getCurrentUser().hasRole("GUIDE") &&
-                                Objects.equals(document.getTrip().getTripGuide().getId(), authService.getCurrentUserId()))) {
+                if(Objects.equals(document.getTrip().getId(), tripId)){
+                    Optional<User> user = userService.getUserByUsername(document.getUsername());
 
-                    GetDocumentResponse documentResponse = GetDocumentResponse.builder()
-                        .id(document.getId())
-                        .fileName(document.getFileName())
-                        .title(document.getTitle())
-                        .tripId(document.getTrip().getId())
-                        .username(document.getUsername())
-                        .build();
+                    if ((user.isPresent() && Objects.equals(user.get().getId(), authService.getCurrentUserId())) ||
+                            (authService.getCurrentUser().hasRole("GUIDE")
+                                    && document.getTrip().getTripGuides().contains(authService.getCurrentUser()))){
 
-                documentResponses.add(documentResponse);
+                        GetDocumentResponse documentResponse = GetDocumentResponse.builder()
+                                .id(document.getId())
+                                .fileName(document.getFileName())
+                                .title(document.getTitle())
+                                .tripId(document.getTrip().getId())
+                                .username(document.getUsername())
+                                .build();
+
+                        documentResponses.add(documentResponse);
+                    }
                 }
             }
 
@@ -104,7 +110,7 @@ public class DocumentController {
     public ResponseEntity<Void> deleteDocument(@PathVariable("trip_id") Long tripId, @PathVariable("document_id") Long documentID) {
         Optional<Trip> trip = tripService.getTrip(tripId);
 
-        if (trip.isPresent() && (Objects.equals(trip.get().getTripGuide().getId(), authService.getCurrentUserId()) || authService.getCurrentUser().hasRole("MODERATOR")))
+        if (trip.isPresent() && (trip.get().getTripGuides().contains(authService.getCurrentUser())) || authService.getCurrentUser().hasRole("MODERATOR"))
         {
 
             boolean success = documentService.deleteDocument(documentID);
@@ -122,18 +128,22 @@ public class DocumentController {
     public ResponseEntity<Void> createDocument(@PathVariable("trip_id") Long tripId, @RequestBody CreateDocumentRequest request, UriComponentsBuilder builder) {
         Optional<Trip> trip = tripService.getTrip(tripId);
 
-        if (trip.isPresent() && Objects.equals(trip.get().getTripGuide().getId(), authService.getCurrentUserId())) {
-            Document document = Document.builder()
-                    .fileName(request.getFileName())
-                    .title(request.getTitle())
-                    .trip(trip.get())
-                    .username(request.getUsername())
-                    .build();
+        if (trip.isPresent()) {
+            if(trip.get().getTripGuides().contains(authService.getCurrentUser())) {
+                Document document = Document.builder()
+                        .fileName(request.getFileName())
+                        .title(request.getTitle())
+                        .trip(trip.get())
+                        .username(request.getUsername())
+                        .build();
 
-            documentService.createDocument(document);
+                documentService.createDocument(document);
 
-            return ResponseEntity.created(builder.pathSegment("api", "documents", "{id}")
-                    .buildAndExpand(document.getId()).toUri()).build();
+                return ResponseEntity.created(builder.pathSegment("api", "documents", "{id}")
+                        .buildAndExpand(document.getId()).toUri()).build();
+            }else {
+                return ResponseEntity.badRequest().build();
+            }
         } else {
             return ResponseEntity.notFound().build();
         }
