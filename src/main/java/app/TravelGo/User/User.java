@@ -2,6 +2,7 @@ package app.TravelGo.User;
 
 import app.TravelGo.Trip.Trip;
 import app.TravelGo.User.Role.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -53,14 +54,15 @@ public class User implements UserDetails {
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    @JsonIgnore
     private Set<Role> roles;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_trips",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "trip_id", referencedColumnName = "id"))
+    @JsonIgnore
     private Set<Trip> enrolledTrips = new HashSet<>();
-
 
     public void addRole(Role role) {
         if (this.roles == null) {

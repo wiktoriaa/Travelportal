@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -29,8 +31,23 @@ public class UserController {
 
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
-    public @ResponseBody Iterable<User> getAllUsers() {
-        return userService.getAllUsers(); // TODO: Remove passwords
+    public @ResponseBody Iterable<GetUserResponse> getAllUsers() {
+        List<GetUserResponse> usersWithoutPasswords = new ArrayList<>();
+
+        for (User user : userService.getAllUsers()) {
+            GetUserResponse userResponse = GetUserResponse.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .name(user.getName())
+                    .surname(user.getSurname())
+                    .email(user.getEmail())
+                    .phoneNumber(user.getPhoneNumber())
+                    .privileges(user.getPrivileges())
+                    .build();
+            usersWithoutPasswords.add(userResponse);
+        }
+
+        return usersWithoutPasswords;
     }
 
     @GetMapping("/{user_id}")
