@@ -107,7 +107,7 @@ public class PostController {
         return ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     public @ResponseBody
     ResponseEntity<Void> createPost(@RequestParam("title") String title,
@@ -168,4 +168,37 @@ public class PostController {
         long likesCount = likeService.getLikesCountForPost(post);
         return ResponseEntity.ok(likesCount);
     }
+
+    @PutMapping("/{post_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Object> updatePost(@PathVariable("post_id") Long postId, @RequestBody UpdatePostRequest updateRequest) {
+        Optional<Post> postOptional = postService.getPost(postId);
+
+        if (postOptional.isPresent()) {
+            Post existingPost = postOptional.get();
+
+            String username = authService.getCurrentUser().getUsername();
+            Long userID = authService.getCurrentUser().getId();
+            String postOwnerUsername = existingPost.getUsername();
+
+            if (username.equals(postOwnerUsername) || userService.hasRole(userID, "MODERATOR")) {
+                if (updateRequest.getTitle() != null) {
+                    existingPost.setTitle(updateRequest.getTitle());
+                }
+                if (updateRequest.getContent() != null) {
+                    existingPost.setContent(updateRequest.getContent());
+                }
+                if (updateRequest.getAbout() != null) {
+                    existingPost.setAbout(updateRequest.getAbout());
+                }
+                existingPost.setUpdatedAt(LocalDateTime.now());
+
+                postService.updatePost(existingPost);
+
+                return ResponseEntity.ok("Post updated successfully");
+            }
+        }
+        return ResponseEntity.notFound().build();
+    }
+
 }

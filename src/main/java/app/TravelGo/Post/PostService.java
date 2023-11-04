@@ -34,4 +34,10 @@ public class PostService {
         }
         return false;
     }
+
+    public void updatePost(Post existingPost) {
+        if (existingPost != null) {
+            postRepository.save(existingPost);
+        }
+    }
 }
