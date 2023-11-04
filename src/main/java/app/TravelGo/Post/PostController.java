@@ -1,5 +1,6 @@
 package app.TravelGo.Post;
 
+import app.TravelGo.Comment.CommentService;
 import app.TravelGo.File.FileService;
 import app.TravelGo.Post.Like.LikeService;
 import app.TravelGo.User.Auth.AuthService;
@@ -28,15 +29,17 @@ public class PostController {
     private final AuthService authService;
     private final LikeService likeService;
     private final FileService fileService;
+    private final CommentService commentService;
 
     @Autowired
     public PostController(PostService postService, UserService userService, AuthService authService,
-                          LikeService likeService, FileService fileService) {
+                          LikeService likeService, FileService fileService, CommentService commentService) {
         this.postService = postService;
         this.userService = userService;
         this.authService = authService;
         this.likeService = likeService;
         this.fileService = fileService;
+        this.commentService = commentService;
     }
 
     @GetMapping
@@ -60,6 +63,7 @@ public class PostController {
                     .createdAt(post.getCreatedAt())
                     .likes(post.getLikes())
                     .imagesDir("/api/files/posts/" + post.getId())
+                    .numberOfComments(commentService.countCommentsForPost(post.getId()))
                     .build();
             postResponses.add(postResponse);
         }
@@ -81,8 +85,10 @@ public class PostController {
                     .userID(userService.getUserByUsername(post.getUsername()).get().getId())
                     .about(post.getAbout())
                     .createdAt(post.getCreatedAt())
+                    .updatedAt(post.getUpdatedAt())
                     .likes(post.getLikes())
                     .imagesDir("/api/files/posts/" + post.getId())
+                    .numberOfComments(commentService.countCommentsForPost(post.getId()))
                     .build();
             return ResponseEntity.ok(postResponse);
         }
