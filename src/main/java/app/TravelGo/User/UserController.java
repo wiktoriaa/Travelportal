@@ -1,5 +1,9 @@
 package app.TravelGo.User;
 
+import app.TravelGo.Comment.Comment;
+import app.TravelGo.Comment.CommentService;
+import app.TravelGo.Post.Post;
+import app.TravelGo.Post.PostService;
 import app.TravelGo.Trip.Trip;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.Role.Role;
@@ -22,12 +26,16 @@ public class UserController {
     private final UserService userService;
     private final RoleRepository roleRepository;
     private final AuthService authService;
+    private final PostService postService;
+    private final CommentService commentService;
 
     @Autowired
-    public UserController(UserService userService, RoleRepository roleRepository, AuthService authService) {
+    public UserController(UserService userService, RoleRepository roleRepository, AuthService authService, PostService postService, CommentService commentService) {
         this.userService = userService;
         this.roleRepository = roleRepository;
         this.authService = authService;
+        this.postService = postService;
+        this.commentService = commentService;
     }
 
     @GetMapping("")
@@ -110,6 +118,18 @@ public class UserController {
                     trip.getTripGuides().remove(user);
                 }
                 user.getGuidedTrips().clear();
+
+                for (Post post : postService.getPosts()){
+                    if(post.getUsername().equals(user.getUsername())){
+                        postService.deletePost(post.getId());
+                    }
+                }
+
+                for (Comment comment : commentService.getComments()){
+                    if(comment.getUsername().equals(user.getUsername())){
+                        commentService.deleteComment(comment.getId());
+                    }
+                }
                 userService.deleteUser(id);
 
                 return ResponseEntity.accepted().build();
