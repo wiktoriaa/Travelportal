@@ -144,9 +144,9 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<SimpleStringMessage> likePost(@RequestBody LikeRequest request) {
+    public ResponseEntity<SimpleStringMessage> likePost(@PathVariable("postId") Long postId) {
         User currentUser = authService.getCurrentUser();
-        Post likedPost = postService.getPost(request.getPostId()).orElse(null);
+        Post likedPost = postService.getPost(postId).orElse(null);
 
         if (likeService.isPostLikedByUser(currentUser, likedPost)) {
             return ResponseEntity.ok(new SimpleStringMessage("Post already liked"));
