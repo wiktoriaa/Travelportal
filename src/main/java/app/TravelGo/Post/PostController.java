@@ -16,9 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("api/posts")
@@ -46,6 +44,8 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<GetPostResponse>> getAllPosts() {
         List<Post> posts = postService.getPosts();
+
+        Collections.sort(posts, Comparator.comparing(Post::getCreatedAt).reversed());
         List<GetPostResponse> postResponses = new ArrayList<>();
 
         for (Post post : posts) {
