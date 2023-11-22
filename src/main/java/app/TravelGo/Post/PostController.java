@@ -124,7 +124,7 @@ public class PostController {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .likes(0)
+                .likes(Long.getLong("0"))
                 .username(this.authService.getCurrentUser().getUsername())
                 .about(about)
                 .updatedAt(LocalDateTime.now())
@@ -153,17 +153,22 @@ public class PostController {
         }
         else if (likedPost != null){
             likeService.likePost(currentUser, likedPost);
+            likedPost.setLikes(likeService.getLikesCountForPost(likedPost));
+            postService.updatePost(likedPost);
         }
 
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{postId}/unlike")
-    public ResponseEntity<String> unlikePost(@RequestBody LikeRequest request) {
+    public ResponseEntity<String> unlikePost(@PathVariable("postId") Long postId) {
         User currentUser = authService.getCurrentUser();
-        Post likedPost = postService.getPost(request.getPostId()).orElse(null);
+        Post likedPost = postService.getPost(postId).orElse(null);
 
         likeService.unlikePost(currentUser, likedPost);
+        likedPost.setLikes(likeService.getLikesCountForPost(likedPost));
+        postService.updatePost(likedPost);
+
         return ResponseEntity.ok().build();
     }
 

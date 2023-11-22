@@ -47,7 +47,7 @@ public class TripDiscussionController {
             Post post = Post.builder()
                     .title(request.getTitle())
                     .content(request.getContent())
-                    .likes(0)
+                    .likes(Long.getLong("0"))
                     .username(this.authService.getCurrentUser().getUsername())
                     .about(request.getAbout())
                     .updatedAt(LocalDateTime.now())

@@ -39,7 +39,7 @@ public class Post implements Serializable {
     @NotFound(action= NotFoundAction.IGNORE)
     private Trip trip;
 
-    private int likes;
+    private Long likes;
 
     private String about;
 

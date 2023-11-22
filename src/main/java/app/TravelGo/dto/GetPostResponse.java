@@ -20,7 +20,7 @@ public class GetPostResponse {
     private String about;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Integer likes;
+    private Long likes;
     private String imagesDir;
     private Integer numberOfComments;
 }

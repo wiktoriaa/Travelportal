@@ -1,6 +1,5 @@
 package app.TravelGo.Offer;
 
-import app.TravelGo.Post.Like.LikeService;
 import app.TravelGo.Post.Post;
 import app.TravelGo.Post.PostService;
 import app.TravelGo.Post.PostType;
@@ -16,9 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("api/offer")
@@ -43,7 +40,7 @@ public class OfferController {
         Post post = Post.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
-                .likes(0)
+                .likes(Long.getLong("0"))
                 .username(this.authService.getCurrentUser().getUsername())
                 .about(request.getAbout())
                 .updatedAt(LocalDateTime.now())
@@ -62,6 +59,8 @@ public class OfferController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<GetPostResponse>> getAllPosts() {
         List<Post> posts = postService.getPosts();
+
+        Collections.sort(posts, Comparator.comparing(Post::getCreatedAt).reversed());
         List<GetPostResponse> postResponses = new ArrayList<>();
 
         for (Post post : posts) {
