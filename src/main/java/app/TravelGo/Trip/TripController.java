@@ -36,9 +36,7 @@ public class TripController {
         Optional<Trip> response = tripService.getTrip(tripId);
         if (response.isPresent()) {
             Trip trip = response.get();
-            List<String> participantNames = trip.getParticipants().stream()
-                    .map(User::getUsername)
-                    .collect(Collectors.toList());
+
             List<Long> guidesIDs = trip.getTripGuides().stream()
                     .map(User::getId)
                     .toList();
@@ -51,7 +49,7 @@ public class TripController {
                     .rate(trip.getRate())
                     .numberOfRates(trip.getNumberOfRates())
                     .archived(trip.getArchived())
-                    .participants(participantNames)
+                    .participants(trip.getParticipants())
                     .tripGuides(guidesIDs)
                     .build();
 
@@ -86,7 +84,7 @@ public class TripController {
                             .rate(trip.getRate())
                             .numberOfRates(trip.getNumberOfRates())
                             .archived(trip.getArchived())
-                            .participants(participantNames)
+                            .participants(trip.getParticipants())
                             .tripGuides(guidesIDs)
                             .build();
 
