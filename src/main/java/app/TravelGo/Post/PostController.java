@@ -6,7 +6,9 @@ import app.TravelGo.Post.Like.LikeService;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.User;
 import app.TravelGo.User.UserService;
-import app.TravelGo.dto.*;
+import app.TravelGo.dto.GetPostResponse;
+import app.TravelGo.dto.SimpleStringMessage;
+import app.TravelGo.dto.UpdatePostRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -115,17 +117,18 @@ public class PostController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    public @ResponseBody
-    ResponseEntity<Void> createPost(@RequestParam("title") String title,
-                                    @RequestParam("content") String content,
-                                    @RequestParam("about") String about,
-                                    @RequestParam(value = "image", required = false) MultipartFile image,
-                                    UriComponentsBuilder builder) throws IOException {
+    public ResponseEntity<Void> createPost(
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam("about") String about,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            UriComponentsBuilder builder) throws IOException {
+
         Post post = Post.builder()
                 .title(title)
                 .content(content)
                 .likes(0L)
-                .username(this.authService.getCurrentUser().getUsername())
+                .username(authService.getCurrentUser().getUsername())
                 .about(about)
                 .updatedAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
@@ -135,13 +138,16 @@ public class PostController {
 
         post = postService.createPost(post);
 
-        if (image != null) {
-            fileService.uploadFeaturePostImage(image, post.getId());
+        if (images != null) {
+            for (MultipartFile image : images) {
+                fileService.uploadFeaturePostImage(image, post.getId());
+            }
         }
 
         return ResponseEntity.created(builder.pathSegment("api", "posts", "{id}")
                 .buildAndExpand(post.getId()).toUri()).build();
     }
+
 
     @PostMapping("/{postId}/like")
     public ResponseEntity<SimpleStringMessage> likePost(@PathVariable("postId") Long postId) {
