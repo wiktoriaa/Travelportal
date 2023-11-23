@@ -19,10 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("api/trips")
@@ -82,6 +79,8 @@ public class TripDiscussionController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<GetPostResponse>> getDiscussionByTrip(@PathVariable("trip_ip") Long tripID) {
         List<Post> posts = postService.getPosts();
+
+        Collections.sort(posts, Comparator.comparing(Post::getCreatedAt).reversed());
         List<GetPostResponse> postResponses = new ArrayList<>();
 
         if (tripService.getTrip(tripID).isPresent()) {
