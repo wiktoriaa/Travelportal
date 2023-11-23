@@ -48,18 +48,18 @@ public class UserController {
     public @ResponseBody Iterable<GetUserResponse> getAllUsers() {
         List<GetUserResponse> usersWithoutPasswords = new ArrayList<>();
 
+
         for (User user : userService.getAllUsers()) {
             GetUserResponse userResponse = GetUserResponse.builder()
-                    .id(user.getId())
                     .username(user.getUsername())
                     .name(user.getName())
                     .surname(user.getSurname())
-                    .email(user.getEmail())
-                    .phoneNumber(user.getPhoneNumber())
-                    .privileges(user.getPrivileges())
                     .roles(user.getRoles())
                     .build();
-            usersWithoutPasswords.add(userResponse);
+            if(authService.getCurrentUser().getUsername().equals(userResponse.getUsername())
+            || authService.getCurrentUser().hasRole("MODERATOR")){
+                usersWithoutPasswords.add(userResponse);
+            }
         }
 
         return usersWithoutPasswords;
@@ -72,16 +72,18 @@ public class UserController {
         if (response.isPresent()) {
             User user = response.get();
             GetUserResponse userResponse = GetUserResponse.builder()
-                    .id(user.getId())
                     .username(user.getUsername())
                     .name(user.getName())
                     .surname(user.getSurname())
-                    .email(user.getEmail())
-                    .phoneNumber(user.getPhoneNumber())
-                    .privileges(user.getPrivileges())
                     .roles(user.getRoles())
                     .build();
-            return ResponseEntity.ok(userResponse);
+            if(authService.getCurrentUser().getUsername().equals(userResponse.getUsername())
+                    || authService.getCurrentUser().hasRole("MODERATOR")) {
+                return ResponseEntity.ok(userResponse);
+            }
+            else {
+                return ResponseEntity.badRequest().build();
+            }
         }
         return ResponseEntity.notFound().build();
     }
