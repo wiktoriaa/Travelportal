@@ -15,6 +15,7 @@ public class GetUserProfileResponse {
      private String surname;
      private String email;
      private Integer phoneNumber;
+     private String profileImageUrl;
 
 
 }

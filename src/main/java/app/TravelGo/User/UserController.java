@@ -2,6 +2,7 @@ package app.TravelGo.User;
 
 import app.TravelGo.Comment.Comment;
 import app.TravelGo.Comment.CommentService;
+import app.TravelGo.File.FileService;
 import app.TravelGo.Post.Post;
 import app.TravelGo.Post.PostService;
 import app.TravelGo.Trip.Trip;
@@ -13,8 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,14 +31,16 @@ public class UserController {
     private final AuthService authService;
     private final PostService postService;
     private final CommentService commentService;
+    private final FileService fileService;
 
     @Autowired
-    public UserController(UserService userService, RoleRepository roleRepository, AuthService authService, PostService postService, CommentService commentService) {
+    public UserController(UserService userService, RoleRepository roleRepository, AuthService authService, PostService postService, CommentService commentService, FileService fileService) {
         this.userService = userService;
         this.roleRepository = roleRepository;
         this.authService = authService;
         this.postService = postService;
         this.commentService = commentService;
+        this.fileService = fileService;
     }
 
     @GetMapping("")
@@ -178,6 +183,7 @@ public class UserController {
                     .surname(user.getSurname())
                     .email(user.getEmail())
                     .phoneNumber(user.getPhoneNumber())
+                    .profileImageUrl(fileService.getProfileImagesDir(user.getId()))
                     .build();
             return ResponseEntity.ok(userResponse);
             }
@@ -188,7 +194,8 @@ public class UserController {
     @PostMapping("/{id}/profile")
     public ResponseEntity<Void> updateProfile(
             @PathVariable("id") Long id,
-            @RequestBody UpdateUserProfileRequest request
+            @ModelAttribute UpdateUserProfileRequest request,
+            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage
     ) {
         Optional<User> userOptional = userService.getUser(id);
 
@@ -207,6 +214,15 @@ public class UserController {
                 }
                 if (request.getPhoneNumber() != null) {
                     user.setPhoneNumber(request.getPhoneNumber());
+                }
+
+
+                if (profileImage != null) {
+                    try {
+                        fileService.uploadProfileImage(profileImage, user.getId());
+                    } catch (IOException e) {
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                    }
                 }
                 userService.saveUser(user);
 

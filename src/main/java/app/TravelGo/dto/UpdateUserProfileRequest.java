@@ -2,6 +2,7 @@ package app.TravelGo.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Builder
@@ -10,4 +11,6 @@ public class UpdateUserProfileRequest {
     private String surname;
     private String email;
     private Integer phoneNumber;
+    private MultipartFile profileImage;
+
 }

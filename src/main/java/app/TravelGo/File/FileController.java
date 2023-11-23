@@ -2,6 +2,7 @@ package app.TravelGo.File;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,8 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +27,9 @@ public class FileController {
 
     @Value("${file.post-images-dir}")
     private String postsImagesDir;
+    @Value("${file.profile-images-dir}")
+    private String profileImagesDir;
+
 
     @GetMapping("/posts/{postDir}")
     @ResponseBody
@@ -64,4 +66,22 @@ public class FileController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    @GetMapping("/profile/{username}")
+    @ResponseBody
+    public ResponseEntity<byte[]> serveProfileImage(@PathVariable String username) {
+        try {
+            Path imagePath = Paths.get(this.profileImagesDir, username + ".jpg");
+            byte[] imageBytes = Files.readAllBytes(imagePath);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

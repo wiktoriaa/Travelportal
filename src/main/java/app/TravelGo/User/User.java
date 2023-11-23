@@ -64,6 +64,10 @@ public class User implements UserDetails {
     @ToString.Exclude
     private List<Trip> guidedTrips = new ArrayList<>();
 
+    @Column(name = "profile_image_path")
+    private String profileImagePath;
+
+
     public void addRole(Role role) {
         if (this.roles == null) {
             this.roles = new HashSet<>();

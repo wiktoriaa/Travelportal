@@ -15,12 +15,15 @@ public class FileService {
     @Value("${file.post-images-dir}")
     private String postsImagesDir;
 
+    @Value("${file.profile-images-dir}")
+    private String profileImagesDir;
+
     public void uploadFeaturePostImage(MultipartFile file, Long postId) throws IOException {
         String uploadDir = this.getPostsImagesDir(postId);
         this.uploadFile(uploadDir, file);
     }
 
-    private String getPostsImagesDir(Long postId) {
+    public String getPostsImagesDir(Long postId) {
         String dir = this.postsImagesDir + '/' + postId.toString();
         File directory = new File(dir);
 
@@ -37,5 +40,21 @@ public class FileService {
 
         fileNames.append(file.getOriginalFilename());
         Files.write(fileNameAndPath, file.getBytes());
+    }
+
+    public void uploadProfileImage(MultipartFile file, Long userId) throws IOException {
+        String uploadDir = getProfileImagesDir(userId);
+        uploadFile(uploadDir, file);
+    }
+
+    public String getProfileImagesDir(Long userId) {
+        String dir = profileImagesDir + '/' + userId.toString() + '/';
+        File directory = new File(dir);
+
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        return dir;
     }
 }
