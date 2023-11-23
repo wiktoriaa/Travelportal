@@ -47,7 +47,7 @@ public class TripDiscussionController {
                                     @RequestParam("title") String title,
                                     @RequestParam("content") String content,
                                     @RequestParam("about") String about,
-                                    @RequestParam(value = "image", required = false) MultipartFile image,
+                                    @RequestParam(value = "images", required = false) List<MultipartFile> images,
                                     UriComponentsBuilder builder) throws IOException {
         Optional<Trip> tripOptional = tripService.getTrip(tripId);
         if (tripOptional.isPresent()) {
@@ -65,8 +65,10 @@ public class TripDiscussionController {
 
             post = postService.createPost(post);
 
-            if (image != null) {
-                fileService.uploadFeaturePostImage(image, post.getId());
+            if (images != null) {
+                for (MultipartFile image : images) {
+                    fileService.uploadFeaturePostImage(image, post.getId());
+                }
             }
 
             return ResponseEntity.created(builder.pathSegment("api", "trips", "{trip_ip}", "discussion", "{post_id}")
