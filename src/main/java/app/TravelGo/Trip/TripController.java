@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/trips")
@@ -37,10 +36,6 @@ public class TripController {
         if (response.isPresent()) {
             Trip trip = response.get();
 
-            List<Long> guidesIDs = trip.getTripGuides().stream()
-                    .map(User::getId)
-                    .toList();
-
             GetTripResponse tripResponse = GetTripResponse.builder()
                     .id(trip.getId())
                     .date(trip.getDate())
@@ -50,7 +45,7 @@ public class TripController {
                     .numberOfRates(trip.getNumberOfRates())
                     .archived(trip.getArchived())
                     .participants(trip.getParticipants())
-                    .tripGuides(guidesIDs)
+                    .tripGuides(trip.getTripGuides())
                     .build();
 
             return ResponseEntity.ok(tripResponse);
@@ -68,13 +63,6 @@ public class TripController {
             List<GetTripResponse> tripResponses = new ArrayList<>();
 
             for (Trip trip : trips) {
-                List<String> participantNames = trip.getParticipants().stream()
-                        .map(User::getUsername)
-                        .collect(Collectors.toList());
-                List<Long> guidesIDs = trip.getTripGuides().stream()
-                        .map(User::getId)
-                        .toList();
-
                 if (!trip.getArchived()) {
                     GetTripResponse tripResponse = GetTripResponse.builder()
                             .id(trip.getId())
@@ -85,7 +73,7 @@ public class TripController {
                             .numberOfRates(trip.getNumberOfRates())
                             .archived(trip.getArchived())
                             .participants(trip.getParticipants())
-                            .tripGuides(guidesIDs)
+                            .tripGuides(trip.getTripGuides())
                             .build();
 
                     tripResponses.add(tripResponse);

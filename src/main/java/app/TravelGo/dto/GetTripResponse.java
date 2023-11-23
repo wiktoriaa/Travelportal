@@ -23,5 +23,5 @@ public class GetTripResponse {
     private Integer numberOfRates;
     private Boolean archived;
     private Set<User> participants;
-    private List<Long> tripGuides;
+    private List<User> tripGuides;
 }

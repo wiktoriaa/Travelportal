@@ -62,6 +62,7 @@ public class User implements UserDetails {
 
     @ManyToMany(mappedBy = "tripGuides")
     @ToString.Exclude
+    @JsonIgnore
     private List<Trip> guidedTrips = new ArrayList<>();
 
     @Column(name = "profile_image_path")
