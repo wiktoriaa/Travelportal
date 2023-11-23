@@ -124,7 +124,7 @@ public class PostController {
         Post post = Post.builder()
                 .title(title)
                 .content(content)
-                .likes(Long.getLong("0"))
+                .likes(0L)
                 .username(this.authService.getCurrentUser().getUsername())
                 .about(about)
                 .updatedAt(LocalDateTime.now())

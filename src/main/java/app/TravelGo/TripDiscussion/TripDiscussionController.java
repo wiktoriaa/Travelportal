@@ -1,5 +1,6 @@
 package app.TravelGo.TripDiscussion;
 
+import app.TravelGo.File.FileService;
 import app.TravelGo.Post.Post;
 import app.TravelGo.Post.PostService;
 import app.TravelGo.Post.PostType;
@@ -8,19 +9,21 @@ import app.TravelGo.Trip.TripService;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.User;
 import app.TravelGo.User.UserService;
-import app.TravelGo.dto.CreatePostRequest;
 import app.TravelGo.dto.GetPostResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
 @RestController
 @RequestMapping("api/trips")
 public class TripDiscussionController {
@@ -29,27 +32,34 @@ public class TripDiscussionController {
     private final AuthService authService;
     private final UserService userService;
     private final TripService tripService;
+    private final FileService fileService;
 
     @Autowired
     public TripDiscussionController(PostService postService, AuthService authService,
-                                    UserService userService, TripService tripService) {
+                                    UserService userService, TripService tripService, FileService fileService) {
         this.postService = postService;
         this.authService = authService;
         this.userService = userService;
         this.tripService = tripService;
+        this.fileService = fileService;
     }
 
-    @PostMapping("/{trip_ip}/discussion")
+    @PostMapping("/{trip_id}/discussion")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Void> createPost(@PathVariable("trip_ip") Long tripID, @RequestBody CreatePostRequest request, UriComponentsBuilder builder) {
-        Optional<Trip> tripOptional = tripService.getTrip(tripID);
+    ResponseEntity<Void> createPost(@PathVariable("trip_id") Long tripId,
+                                    @RequestParam("title") String title,
+                                    @RequestParam("content") String content,
+                                    @RequestParam("about") String about,
+                                    @RequestParam(value = "image", required = false) MultipartFile image,
+                                    UriComponentsBuilder builder) throws IOException {
+        Optional<Trip> tripOptional = tripService.getTrip(tripId);
         if (tripOptional.isPresent()) {
             Post post = Post.builder()
-                    .title(request.getTitle())
-                    .content(request.getContent())
-                    .likes(Long.getLong("0"))
+                    .title(title)
+                    .content(content)
+                    .likes(0L)
                     .username(this.authService.getCurrentUser().getUsername())
-                    .about(request.getAbout())
+                    .about(about)
                     .updatedAt(LocalDateTime.now())
                     .createdAt(LocalDateTime.now())
                     .type(PostType.DISCUSSION)
@@ -58,8 +68,12 @@ public class TripDiscussionController {
 
             post = postService.createPost(post);
 
+            if (image != null) {
+                fileService.uploadFeaturePostImage(image, post.getId());
+            }
+
             return ResponseEntity.created(builder.pathSegment("api", "trips", "{trip_ip}", "discussion", "{post_id}")
-                    .buildAndExpand(tripID, post.getId()).toUri()).build();
+                    .buildAndExpand(tripId, post.getId()).toUri()).build();
         }
         return ResponseEntity.notFound().build();
     }

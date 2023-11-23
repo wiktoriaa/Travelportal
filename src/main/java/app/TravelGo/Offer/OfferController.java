@@ -40,7 +40,7 @@ public class OfferController {
         Post post = Post.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
-                .likes(Long.getLong("0"))
+                .likes(0L)
                 .username(this.authService.getCurrentUser().getUsername())
                 .about(request.getAbout())
                 .updatedAt(LocalDateTime.now())
