@@ -24,4 +24,5 @@ public class GetTripResponse {
     private Boolean archived;
     private Set<User> participants;
     private List<User> tripGuides;
+    private String description;
 }

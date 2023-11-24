@@ -46,6 +46,7 @@ public class TripController {
                     .archived(trip.getArchived())
                     .participants(trip.getParticipants())
                     .tripGuides(trip.getTripGuides())
+                    .description(trip.getDescription())
                     .build();
 
             return ResponseEntity.ok(tripResponse);
@@ -74,6 +75,7 @@ public class TripController {
                             .archived(trip.getArchived())
                             .participants(trip.getParticipants())
                             .tripGuides(trip.getTripGuides())
+                            .description(trip.getDescription())
                             .build();
 
                     tripResponses.add(tripResponse);
@@ -108,6 +110,7 @@ public class TripController {
                     .archived(false)
                     .participants(new HashSet<>())
                     .tripGuides(guidesList)
+                    .description(request.getDescription())
                     .build();
             trip = tripService.createTrip(trip);
             return ResponseEntity.created(builder.pathSegment("api", "trips", "{id}")

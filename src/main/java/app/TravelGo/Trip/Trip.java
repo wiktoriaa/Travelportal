@@ -28,6 +28,7 @@ public class Trip implements Serializable {
     private LocalDate date;
     private String gatheringPlace;
     private String tripName;
+    private String description;
 
     @OneToMany(mappedBy = "trip", fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     @ToString.Exclude

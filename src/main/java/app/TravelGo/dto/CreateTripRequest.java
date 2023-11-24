@@ -11,4 +11,5 @@ public class CreateTripRequest {
     private String gatheringPlace;
     private String tripName;
     private List<Long> guidesIDs;
+    private String description;
 }
