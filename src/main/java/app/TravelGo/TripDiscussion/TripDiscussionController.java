@@ -59,7 +59,7 @@ public class TripDiscussionController {
                     .about(about)
                     .updatedAt(LocalDateTime.now())
                     .createdAt(LocalDateTime.now())
-                    .type(PostType.DISCUSSION)
+                    .type(PostType.TRIP)
                     .trip(tripOptional.get())
                     .build();
 
@@ -87,7 +87,7 @@ public class TripDiscussionController {
 
         if (tripService.getTrip(tripID).isPresent()) {
             for (Post post : posts) {
-                if (post.getType() != PostType.DISCUSSION || post.getTrip() == null || !Objects.equals(post.getTrip().getId(), tripID)) {
+                if (post.getType() != PostType.TRIP || post.getTrip() == null || !Objects.equals(post.getTrip().getId(), tripID)) {
                     continue;
                 }
                 Optional<User> userOptional = userService.getUserByUsername(post.getUsername());
@@ -117,7 +117,7 @@ public class TripDiscussionController {
     public ResponseEntity<GetPostResponse> getDiscussionPost(@PathVariable("trip_ip") Long tripID, @PathVariable("post_id") Long postID) {
         Optional<Post> postOptional = postService.getPost(postID);
 
-        if (postOptional.isPresent() && postOptional.get().getType() == PostType.DISCUSSION && Objects.equals(postOptional.get().getTrip().getId(), tripID)) {
+        if (postOptional.isPresent() && postOptional.get().getType() == PostType.TRIP && Objects.equals(postOptional.get().getTrip().getId(), tripID)) {
             Optional<User> userOptional = userService.getUserByUsername(postOptional.get().getUsername());
             if (userOptional.isPresent()) {
                 GetPostResponse postResponse = GetPostResponse.builder()
@@ -146,7 +146,7 @@ public class TripDiscussionController {
 
         if (username.equals(postOwnerUsername) || userService.hasRole(userID, "MODERATOR")) {
             Optional<Post> postOptional = postService.getPost(postID);
-            if (postOptional.isPresent() && postOptional.get().getType() == PostType.DISCUSSION && Objects.equals(postOptional.get().getTrip().getId(), tripID)) {
+            if (postOptional.isPresent() && postOptional.get().getType() == PostType.TRIP && Objects.equals(postOptional.get().getTrip().getId(), tripID)) {
                 postService.deletePost(postID);
                 return ResponseEntity.ok().build();
             } else {
