@@ -148,33 +148,34 @@ public class TripController {
             Trip trip = optionalTrip.get();
             User currentUser = authService.getCurrentUser();
 
-            if (!trip.getUserRates().containsKey(currentUser)) {
-                if (requestBody.containsKey("rate")) {
-                    if (trip.getParticipants().contains(currentUser)) {
-                        Double rate = requestBody.get("rate");
+            if (trip.getUserRates().containsKey(currentUser)) {
+                Double previousRate = trip.getUserRates().get(currentUser);
+                trip.setRate((trip.getRate() * trip.getNumberOfRates() - previousRate) / (trip.getNumberOfRates() - 1));
+                trip.setNumberOfRates(trip.getNumberOfRates() - 1);
+            }
 
-                        Double currentRate = (trip.getNumberOfRates() * trip.getRate() + rate) / (trip.getNumberOfRates() + 1);
-                        trip.setNumberOfRates(trip.getNumberOfRates() + 1);
-                        trip.setRate(currentRate);
+            if (requestBody.containsKey("rate")) {
+                if (trip.getParticipants().contains(currentUser)) {
+                    Double rate = requestBody.get("rate");
 
-                        trip.getUserRates().put(currentUser, rate);
+                    trip.setRate((trip.getNumberOfRates() * trip.getRate() + rate) / (trip.getNumberOfRates() + 1));
+                    trip.setNumberOfRates(trip.getNumberOfRates() + 1);
+                    trip.getUserRates().put(currentUser, rate);
 
-                        tripService.saveTrip(trip);
+                    tripService.saveTrip(trip);
 
-                        return ResponseEntity.ok(new SimpleStringMessage("Rate was added. Current rate is now " + trip.getRate()));
-                    } else
-                        return ResponseEntity.ok(new SimpleStringMessage("You must be enrolled to trip to rate it."));
+                    return ResponseEntity.ok(new SimpleStringMessage("Rate was added. Current rate is now " + trip.getRate()));
                 } else {
-                    return ResponseEntity.badRequest().body(new SimpleStringMessage("Rate field is missing in the request JSON."));
+                    return ResponseEntity.ok(new SimpleStringMessage("You must be enrolled to trip to rate it."));
                 }
             } else {
-                return ResponseEntity.badRequest().body(new SimpleStringMessage("User has already rated this trip."));
+                return ResponseEntity.badRequest().body(new SimpleStringMessage("Rate field is missing in the request JSON."));
             }
         } else {
             return ResponseEntity.notFound().build();
         }
-    }
 
+    }
 
     @PutMapping("/{trip_id}/archive")
     @ResponseStatus(HttpStatus.OK)
