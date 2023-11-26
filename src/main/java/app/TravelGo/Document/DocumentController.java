@@ -1,18 +1,20 @@
 package app.TravelGo.Document;
 
+import app.TravelGo.File.FileService;
 import app.TravelGo.Trip.Trip;
 import app.TravelGo.Trip.TripService;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.User;
 import app.TravelGo.User.UserService;
-import app.TravelGo.dto.CreateDocumentRequest;
 import app.TravelGo.dto.GetDocumentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -27,13 +29,16 @@ public class DocumentController {
     final private UserService userService;
 
     final private AuthService authService;
+    final private FileService fileService;
 
     @Autowired
-    public DocumentController(DocumentService documentService, TripService tripService, UserService userService, AuthService authService) {
+    public DocumentController(DocumentService documentService, TripService tripService, UserService userService,
+                              AuthService authService, FileService fileService) {
         this.documentService = documentService;
         this.tripService = tripService;
         this.userService = userService;
         this.authService = authService;
+        this.fileService = fileService;
     }
 
     @GetMapping("trips/{trip_id}/documents")
@@ -59,6 +64,7 @@ public class DocumentController {
                                 .title(document.getTitle())
                                 .tripId(document.getTrip().getId())
                                 .username(document.getUsername())
+                                .pdfPath("/api/files/documents/" + document.getId())
                                 .build();
 
                         documentResponses.add(documentResponse);
@@ -92,6 +98,7 @@ public class DocumentController {
                             .title(document.getTitle())
                             .tripId(document.getTrip().getId())
                             .username(document.getUsername())
+                            .pdfPath("/api/files/documents/" + document.getId())
                             .build();
                     return ResponseEntity.ok(documentResponse);
                 } else {
@@ -125,28 +132,39 @@ public class DocumentController {
 
     @PostMapping("trips/{trip_id}/documents")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<Void> createDocument(@PathVariable("trip_id") Long tripId, @RequestBody CreateDocumentRequest request, UriComponentsBuilder builder) {
+    public ResponseEntity<Void> createDocument(@PathVariable("trip_id") Long tripId,
+                                               @RequestParam("file") MultipartFile file,
+                                               @RequestParam("fileName") String fileName,
+                                               @RequestParam("title") String title,
+                                               @RequestParam("username") String username,
+                                               UriComponentsBuilder builder) throws IOException {
         Optional<Trip> trip = tripService.getTrip(tripId);
 
         if (trip.isPresent()) {
-            if(trip.get().getTripGuides().contains(authService.getCurrentUser())) {
+            if (trip.get().getTripGuides().contains(authService.getCurrentUser())) {
                 Document document = Document.builder()
-                        .fileName(request.getFileName())
-                        .title(request.getTitle())
+                        .fileName(fileName)
+                        .title(title)
                         .trip(trip.get())
-                        .username(request.getUsername())
+                        .username(username)
                         .build();
 
                 documentService.createDocument(document);
 
+                if (file != null) {
+                    fileService.uploadPDFToDocument(file, document.getId());
+                }
+
+
                 return ResponseEntity.created(builder.pathSegment("api", "documents", "{id}")
                         .buildAndExpand(document.getId()).toUri()).build();
-            }else {
+            } else {
                 return ResponseEntity.badRequest().build();
             }
         } else {
             return ResponseEntity.notFound().build();
         }
     }
+
 
 }

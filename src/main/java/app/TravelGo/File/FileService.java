@@ -18,6 +18,9 @@ public class FileService {
     @Value("${file.profile-images-dir}")
     private String profileImagesDir;
 
+    @Value("uploads/documents")
+    private String documentsPDFDir;
+
     public void uploadFeaturePostImage(MultipartFile file, Long postId) throws IOException {
         String uploadDir = this.getPostsImagesDir(postId);
         this.uploadFile(uploadDir, file);
@@ -56,5 +59,26 @@ public class FileService {
         }
 
         return dir;
+    }
+
+    public void uploadPDFToDocument(MultipartFile file, Long documentId) throws IOException {
+        String uploadDir = getDocumentsPDFDir(documentId);
+        uploadPDFFile(uploadDir, file);
+    }
+
+    public String getDocumentsPDFDir(Long documentId) {
+        String dir = documentsPDFDir + '/' + documentId.toString();
+        File directory = new File(dir);
+
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        return dir;
+    }
+
+    private void uploadPDFFile(String directory, MultipartFile file) throws IOException {
+        Path fileNameAndPath = Paths.get(directory, file.getOriginalFilename());
+        Files.write(fileNameAndPath, file.getBytes());
     }
 }

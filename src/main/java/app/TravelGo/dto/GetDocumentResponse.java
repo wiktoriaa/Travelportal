@@ -17,4 +17,5 @@ public class GetDocumentResponse {
     private String title;
     private Long tripId;
     private String username;
+    private String pdfPath;
 }

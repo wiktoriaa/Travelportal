@@ -1,9 +1,9 @@
 package app.TravelGo.Document;
 
 import app.TravelGo.Trip.Trip;
-import app.TravelGo.User.User;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -34,5 +34,6 @@ public class Document implements Serializable {
 
     @Column(name = "username")
     private String username;
+
 
 }
