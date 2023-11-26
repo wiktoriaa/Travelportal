@@ -179,7 +179,7 @@ public class TripController {
     @PutMapping("/{trip_id}/archive")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> archiveTrip(@PathVariable("trip_id") Long tripId) {
-        if (authService.getCurrentUser().hasRole("MODERATOR")) {
+        if (authService.getCurrentUser().hasRole("MODERATOR") || authService.getCurrentUser().hasRole("GUIDE")) {
             Optional<Trip> optionalTrip = tripService.getTrip(tripId);
 
             if (optionalTrip.isPresent()) {
