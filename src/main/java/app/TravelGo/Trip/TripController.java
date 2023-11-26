@@ -208,5 +208,35 @@ public class TripController {
             return ResponseEntity.badRequest().body("Can't find trip.");
         }
     }
+    @PostMapping("/{tripId}/withdraw")
+    public ResponseEntity<String> withdrawFromTrip(@PathVariable("tripId") Long tripId) {
+        Optional<Trip> tripOptional = tripService.getTrip(tripId);
+
+        if (tripOptional.isPresent()) {
+            Trip trip = tripOptional.get();
+
+            User user = authService.getCurrentUser();
+
+            if (user != null) {
+
+                if (!trip.getParticipants().contains(user)) {
+                    return ResponseEntity.badRequest().body("User is not enrolled to that trip.");
+                }
+
+                trip.getParticipants().remove(user);
+                tripService.saveTrip(trip);
+
+                user.getEnrolledTrips().remove(trip);
+                userService.saveUser(user);
+
+                return ResponseEntity.ok("User successfully withdrew from the trip.");
+            } else {
+                return ResponseEntity.badRequest().body("Can't find user.");
+            }
+        } else {
+            return ResponseEntity.badRequest().body("Can't find trip.");
+        }
+    }
+
 
 }
