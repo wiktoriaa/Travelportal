@@ -177,6 +177,25 @@ public class TripController {
 
     }
 
+    @GetMapping("/{trip_id}/rates")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Map<String, Double>> getRates(@PathVariable("trip_id") Long tripId) {
+        Optional<Trip> optionalTrip = tripService.getTrip(tripId);
+
+        if (optionalTrip.isPresent()) {
+            Trip trip = optionalTrip.get();
+            Map<String, Double> ratesMap = new HashMap<>();
+
+            for (Map.Entry<User, Double> entry : trip.getUserRates().entrySet()) {
+                ratesMap.put(entry.getKey().getUsername(), entry.getValue());
+            }
+
+            return ResponseEntity.ok(ratesMap);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PutMapping("/{trip_id}/archive")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> archiveTrip(@PathVariable("trip_id") Long tripId) {
