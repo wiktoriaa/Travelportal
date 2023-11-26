@@ -10,11 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GetUserProfileResponse {
+     private Long id;
      private String username;
      private String name;
      private String surname;
      private String email;
-     private Integer phoneNumber;
+     private String phoneNumber;
      private String profileImageUrl;
 
 

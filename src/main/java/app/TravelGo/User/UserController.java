@@ -180,6 +180,7 @@ public class UserController {
             if(authService.getCurrentUser().equals(userOptional.get())){
             User user = userOptional.get();
             GetUserProfileResponse userResponse = GetUserProfileResponse.builder()
+                    .id(user.getId())
                     .username(user.getUsername())
                     .name(user.getName())
                     .surname(user.getSurname())
@@ -205,14 +206,18 @@ public class UserController {
             User user = userOptional.get();
 
             if (authService.getCurrentUser().equals(user)) {
-                if (request.getName() != null) {
+                if (request.getName() != null && !request.getName().isEmpty()) {
                     user.setName(request.getName());
                 }
-                if (request.getSurname() != null) {
+                if (request.getSurname() != null && !request.getSurname().isEmpty()) {
                     user.setSurname(request.getSurname());
                 }
-                if (request.getEmail() != null) {
-                    user.setEmail(request.getEmail());
+
+                if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+                    User test = this.userService.getUser(request.getEmail()).orElse(null);
+                    if (test == null) {
+                        user.setEmail(request.getEmail());
+                    }
                 }
                 if (request.getPhoneNumber() != null) {
                     user.setPhoneNumber(request.getPhoneNumber());

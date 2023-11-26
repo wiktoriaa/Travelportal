@@ -10,7 +10,7 @@ public class UpdateUserProfileRequest {
     private String name;
     private String surname;
     private String email;
-    private Integer phoneNumber;
+    private String phoneNumber;
     private MultipartFile profileImage;
 
 }

@@ -41,7 +41,7 @@ public class User implements UserDetails {
     private String password;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private Integer phoneNumber;
+    private String phoneNumber;
     private Integer privileges;
 
     @Column(name = "created_at")
