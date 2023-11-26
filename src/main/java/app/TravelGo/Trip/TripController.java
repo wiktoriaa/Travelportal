@@ -9,12 +9,14 @@ import app.TravelGo.dto.SimpleStringMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
 
 @RestController
+@Transactional
 @RequestMapping("api/trips")
 public class TripController {
     private final TripService tripService;
@@ -144,23 +146,35 @@ public class TripController {
 
         if (optionalTrip.isPresent()) {
             Trip trip = optionalTrip.get();
+            User currentUser = authService.getCurrentUser();
 
-            if (requestBody.containsKey("rate")) {
-                Double rate = requestBody.get("rate");
+            if (!trip.getUserRates().containsKey(currentUser)) {
+                if (requestBody.containsKey("rate")) {
+                    if (trip.getParticipants().contains(currentUser)) {
+                        Double rate = requestBody.get("rate");
 
-                Double currentRate = (trip.getNumberOfRates() * trip.getRate() + rate) / (trip.getNumberOfRates() + 1);
-                trip.setNumberOfRates(trip.getNumberOfRates() + 1);
-                trip.setRate(currentRate);
-                tripService.saveTrip(trip);
+                        Double currentRate = (trip.getNumberOfRates() * trip.getRate() + rate) / (trip.getNumberOfRates() + 1);
+                        trip.setNumberOfRates(trip.getNumberOfRates() + 1);
+                        trip.setRate(currentRate);
 
-                return ResponseEntity.ok(new SimpleStringMessage("Rate was added. Current rate is now " + trip.getRate()));
+                        trip.getUserRates().put(currentUser, rate);
+
+                        tripService.saveTrip(trip);
+
+                        return ResponseEntity.ok(new SimpleStringMessage("Rate was added. Current rate is now " + trip.getRate()));
+                    } else
+                        return ResponseEntity.ok(new SimpleStringMessage("You must be enrolled to trip to rate it."));
+                } else {
+                    return ResponseEntity.badRequest().body(new SimpleStringMessage("Rate field is missing in the request JSON."));
+                }
             } else {
-                return ResponseEntity.badRequest().body(new SimpleStringMessage("Rate field is missing in the request JSON."));
+                return ResponseEntity.badRequest().body(new SimpleStringMessage("User has already rated this trip."));
             }
         } else {
             return ResponseEntity.notFound().build();
         }
     }
+
 
     @PutMapping("/{trip_id}/archive")
     @ResponseStatus(HttpStatus.OK)

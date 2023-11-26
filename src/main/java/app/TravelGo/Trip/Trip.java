@@ -3,6 +3,8 @@ package app.TravelGo.Trip;
 import app.TravelGo.Document.Document;
 import app.TravelGo.Post.Post;
 import app.TravelGo.User.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -19,6 +21,7 @@ import java.util.*;
 @ToString
 @Entity
 @Table(name = "trips")
+@JsonIgnoreProperties("documents")
 public class Trip implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "trips")
@@ -32,15 +35,20 @@ public class Trip implements Serializable {
 
     @OneToMany(mappedBy = "trip", fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     @ToString.Exclude
+    @JsonIgnore
     private List<Document> documents = new ArrayList<>();
 
-    @OneToMany@JoinColumn(name = "post_id")
+    @OneToMany
+    @JoinColumn(name = "post_id")
     private List<Post> posts = new ArrayList<>();
 
     private Double rate;
     private Integer numberOfRates;
 
     private Boolean archived;
+
+    @ElementCollection
+    private Map<User, Double> userRates = new HashMap<>();
 
     @ManyToMany
     @JoinTable(
@@ -55,7 +63,6 @@ public class Trip implements Serializable {
     @ToString.Exclude
     private Set<User> participants = new HashSet<>();
 
-
     @Override
     public int hashCode() {
         return Objects.hash(id);
@@ -68,4 +75,6 @@ public class Trip implements Serializable {
         Trip trip = (Trip) obj;
         return Objects.equals(id, trip.id);
     }
+
+
 }

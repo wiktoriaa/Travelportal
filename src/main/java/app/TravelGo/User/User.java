@@ -68,7 +68,6 @@ public class User implements UserDetails {
     @Column(name = "profile_image_path")
     private String profileImagePath;
 
-
     public void addRole(Role role) {
         if (this.roles == null) {
             this.roles = new HashSet<>();
