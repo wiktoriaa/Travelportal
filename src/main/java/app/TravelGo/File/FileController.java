@@ -67,18 +67,32 @@ public class FileController {
         }
     }
 
-
-    @GetMapping("/profile/{username}")
+    @GetMapping("/profile/{userId}")
     @ResponseBody
-    public ResponseEntity<byte[]> serveProfileImage(@PathVariable String username) {
+    public ResponseEntity<byte[]> serveProfileImage(@PathVariable String userId) {
         try {
-            Path imagePath = Paths.get(this.profileImagesDir, username + ".jpg");
-            byte[] imageBytes = Files.readAllBytes(imagePath);
+            File directory = new File(profileImagesDir + '/' + userId);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_JPEG);
+            if (!directory.exists()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
 
-            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+            File[] files = directory.listFiles();
+
+            if (files != null && files.length > 0) {
+                File firstFile = files[0];
+                String filename = firstFile.getName();
+
+                Path imagePath = Paths.get(userId, filename);
+                byte[] imageBytes = Files.readAllBytes(imagePath);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.IMAGE_JPEG);
+
+                return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

@@ -58,7 +58,7 @@ public class FileService {
             directory.mkdirs();
         }
         else {
-            this.deleteAllFilesInDirectory(directory);
+
         }
 
         return dir;
