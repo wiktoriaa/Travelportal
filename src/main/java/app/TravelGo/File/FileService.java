@@ -57,6 +57,9 @@ public class FileService {
         if (!directory.exists()) {
             directory.mkdirs();
         }
+        else {
+            this.deleteAllFilesInDirectory(directory);
+        }
 
         return dir;
     }
@@ -80,5 +83,23 @@ public class FileService {
     private void uploadPDFFile(String directory, MultipartFile file) throws IOException {
         Path fileNameAndPath = Paths.get(directory, file.getOriginalFilename());
         Files.write(fileNameAndPath, file.getBytes());
+    }
+
+    private void deleteAllFilesInDirectory(File directory) {
+        if (!directory.exists()) {
+            System.out.println("Directory does not exist.");
+            return;
+        }
+
+        File[] files = directory.listFiles();
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                } else {
+                    file.delete();
+                }
+            }
+        }
     }
 }
