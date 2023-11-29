@@ -83,7 +83,8 @@ public class FileController {
                 File firstFile = files[0];
                 String filename = firstFile.getName();
 
-                Path imagePath = Paths.get(userId, filename);
+                Path imagePath = Paths.get(profileImagesDir, userId, filename);
+
                 byte[] imageBytes = Files.readAllBytes(imagePath);
 
                 HttpHeaders headers = new HttpHeaders();
@@ -97,5 +98,6 @@ public class FileController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 }
