@@ -47,6 +47,8 @@ public class FileService {
 
     public void uploadProfileImage(MultipartFile file, Long userId) throws IOException {
         String uploadDir = getProfileImagesDir(userId);
+        File directory = new File(uploadDir);
+        this.deleteAllFilesInDirectory(directory);
         uploadFile(uploadDir, file);
     }
 

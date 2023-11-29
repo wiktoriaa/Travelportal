@@ -179,15 +179,15 @@ public class TripController {
 
     @GetMapping("/{trip_id}/rates")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Map<String, Double>> getRates(@PathVariable("trip_id") Long tripId) {
+    public ResponseEntity<Map<Long, Double>> getRates(@PathVariable("trip_id") Long tripId) {
         Optional<Trip> optionalTrip = tripService.getTrip(tripId);
 
         if (optionalTrip.isPresent()) {
             Trip trip = optionalTrip.get();
-            Map<String, Double> ratesMap = new HashMap<>();
+            Map<Long, Double> ratesMap = new HashMap<>();
 
             for (Map.Entry<User, Double> entry : trip.getUserRates().entrySet()) {
-                ratesMap.put(entry.getKey().getUsername(), entry.getValue());
+                ratesMap.put(entry.getKey().getId(), entry.getValue());
             }
 
             return ResponseEntity.ok(ratesMap);
