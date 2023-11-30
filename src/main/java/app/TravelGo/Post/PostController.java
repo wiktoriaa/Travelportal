@@ -212,7 +212,11 @@ public class PostController {
 
                 postService.updatePost(existingPost);
 
-                return ResponseEntity.ok("Post updated successfully");
+                Map<String, Object> response = new HashMap<>();
+                response.put("status", "success");
+                response.put("message", "Post updated successfully");
+
+                return ResponseEntity.ok(response);
             }
         }
         return ResponseEntity.notFound().build();
