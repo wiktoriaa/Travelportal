@@ -104,4 +104,22 @@ public class FileService {
             }
         }
     }
+
+    public void deleteAllPostImages(Long postId) {
+        String postImagesDir = getPostsImagesDir(postId);
+        File directory = new File(postImagesDir);
+
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+
+            if (files != null) {
+                for (File file : files) {
+                    file.delete();
+                    }
+                }
+            }
+        }
+
+
+
 }

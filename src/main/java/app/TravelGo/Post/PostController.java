@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -222,4 +223,42 @@ public class PostController {
         return ResponseEntity.notFound().build();
     }
 
+    @DeleteMapping("/{post_id}/images")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Void> deleteAllPostImages(@PathVariable("post_id") Long postId) {
+        String username = this.authService.getCurrentUser().getUsername();
+        Long userID = this.authService.getCurrentUser().getId();
+        String postOwnerUsername = postService.getPost(postId).orElse(null).getUsername();
+
+        if (username.equals(postOwnerUsername) || userService.hasRole(userID, "MODERATOR")) {
+            fileService.deleteAllPostImages(postId);
+            return ResponseEntity.ok().build();
+
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+    @PostMapping("/{post_id}/images")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Object> updatePostImages(
+            @PathVariable("post_id") Long postId,
+            @RequestParam("images") List<MultipartFile> images,
+            UriComponentsBuilder builder) throws IOException {
+
+        String username = this.authService.getCurrentUser().getUsername();
+        Long userID = this.authService.getCurrentUser().getId();
+        String postOwnerUsername = postService.getPost(postId).orElse(null).getUsername();
+
+        if (username.equals(postOwnerUsername) || userService.hasRole(userID, "MODERATOR")) {
+            fileService.deleteAllPostImages(postId);
+            for (MultipartFile image : images) {
+                fileService.uploadFeaturePostImage(image, postId);
+            }
+
+            return ResponseEntity.created(builder.pathSegment("api", "posts", "{id}", "images")
+                    .buildAndExpand(postId).toUri()).build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
