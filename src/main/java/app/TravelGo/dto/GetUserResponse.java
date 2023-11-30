@@ -13,7 +13,10 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GetUserResponse {
+    private Long id;
     private String username;
+    private String email;
+    private String phoneNumber;
     private String name;
     private String surname;
     private Set<Role> roles;

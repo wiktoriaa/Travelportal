@@ -47,15 +47,31 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public @ResponseBody Iterable<GetUserResponse> getAllUsers() {
         List<GetUserResponse> usersWithoutPasswords = new ArrayList<>();
-
+        GetUserResponse userResponse;
 
         for (User user : userService.getAllUsers()) {
-            GetUserResponse userResponse = GetUserResponse.builder()
-                    .username(user.getUsername())
-                    .name(user.getName())
-                    .surname(user.getSurname())
-                    .roles(user.getRoles())
-                    .build();
+
+            if (authService.getCurrentUser().hasRole("MODERATOR")) {
+                userResponse = GetUserResponse.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .phoneNumber(user.getPhoneNumber())
+                        .name(user.getName())
+                        .surname(user.getSurname())
+                        .roles(user.getRoles())
+                        .build();
+            }
+            else {
+                userResponse = GetUserResponse.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .name(user.getName())
+                        .surname(user.getSurname())
+                        .roles(user.getRoles())
+                        .build();
+            }
+
             if(authService.getCurrentUser().getUsername().equals(userResponse.getUsername())
             || authService.getCurrentUser().hasRole("MODERATOR")){
                 usersWithoutPasswords.add(userResponse);
