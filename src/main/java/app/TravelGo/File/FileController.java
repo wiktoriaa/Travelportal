@@ -30,6 +30,8 @@ public class FileController {
     @Value("${file.profile-images-dir}")
     private String profileImagesDir;
 
+    @Value("${file.documents-pdf-dir}")
+    private String documentsPDFDir;
 
     @GetMapping("/posts/{postDir}")
     @ResponseBody
@@ -98,6 +100,40 @@ public class FileController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    @GetMapping("/documents/{documentId}")
+    @ResponseBody
+    public ResponseEntity<byte[]> serveDocument(@PathVariable Long documentId) {
+        try {
+            String documentDir = Paths.get(this.documentsPDFDir, documentId.toString()).toString();
+            File directory = new File(documentDir);
+
+            if (!directory.exists()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            File[] files = directory.listFiles();
+
+            if (files != null && files.length > 0) {
+                File firstFile = files[0];
+                String filename = firstFile.getName();
+
+                Path documentPath = Paths.get(documentDir, filename);
+                byte[] documentBytes = Files.readAllBytes(documentPath);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_PDF);
+
+                return new ResponseEntity<>(documentBytes, headers, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 
 }
