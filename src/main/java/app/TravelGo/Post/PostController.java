@@ -187,9 +187,16 @@ public class PostController {
         return ResponseEntity.ok(likesCount);
     }
 
-    @PutMapping("/{post_id}")
+    @PostMapping(value = "/{post_id}", consumes = { "multipart/form-data"})
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> updatePost(@PathVariable("post_id") Long postId, @RequestBody UpdatePostRequest updateRequest) {
+    public ResponseEntity<Object> updatePost(
+            @PathVariable("post_id") Long postId,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "content", required = false) String content,
+            @RequestParam(value = "about", required = false) String about
+            ) throws IOException {
+
         Optional<Post> postOptional = postService.getPost(postId);
 
         if (postOptional.isPresent()) {
@@ -200,14 +207,20 @@ public class PostController {
             String postOwnerUsername = existingPost.getUsername();
 
             if (username.equals(postOwnerUsername) || userService.hasRole(userID, "MODERATOR")) {
-                if (updateRequest.getTitle() != null) {
-                    existingPost.setTitle(updateRequest.getTitle());
+                if (title != null) {
+                    existingPost.setTitle(title);
                 }
-                if (updateRequest.getContent() != null) {
-                    existingPost.setContent(updateRequest.getContent());
+                if (content != null) {
+                    existingPost.setContent(content);
                 }
-                if (updateRequest.getAbout() != null) {
-                    existingPost.setAbout(updateRequest.getAbout());
+                if (about != null) {
+                    existingPost.setAbout(about);
+                }
+                if (images != null && !images.isEmpty()) {
+                    fileService.deleteAllPostImages(postId);
+                    for (MultipartFile image : images) {
+                        fileService.uploadFeaturePostImage(image, postId);
+                    }
                 }
                 existingPost.setUpdatedAt(LocalDateTime.now());
 
@@ -222,6 +235,7 @@ public class PostController {
         }
         return ResponseEntity.notFound().build();
     }
+
 
     @DeleteMapping("/{post_id}/images")
     @ResponseStatus(HttpStatus.OK)
@@ -238,27 +252,5 @@ public class PostController {
 
         return ResponseEntity.notFound().build();
     }
-    @PostMapping("/{post_id}/images")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> updatePostImages(
-            @PathVariable("post_id") Long postId,
-            @RequestParam("images") List<MultipartFile> images,
-            UriComponentsBuilder builder) throws IOException {
 
-        String username = this.authService.getCurrentUser().getUsername();
-        Long userID = this.authService.getCurrentUser().getId();
-        String postOwnerUsername = postService.getPost(postId).orElse(null).getUsername();
-
-        if (username.equals(postOwnerUsername) || userService.hasRole(userID, "MODERATOR")) {
-            fileService.deleteAllPostImages(postId);
-            for (MultipartFile image : images) {
-                fileService.uploadFeaturePostImage(image, postId);
-            }
-
-            return ResponseEntity.created(builder.pathSegment("api", "posts", "{id}", "images")
-                    .buildAndExpand(postId).toUri()).build();
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
-    }
 }
