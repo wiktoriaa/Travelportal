@@ -100,6 +100,54 @@ public class OfferController {
         return ResponseEntity.ok(postResponses);
     }
 
+    @PostMapping(value = "/{offer_id}", consumes = { "multipart/form-data"})
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Object> updateOffer(
+            @PathVariable("offer_id") Long offerID,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "content", required = false) String content,
+            @RequestParam(value = "about", required = false) String about
+    ) throws IOException {
+
+        Optional<Post> postOptional = postService.getPost(offerID);
+
+        if (postOptional.isPresent()) {
+            Post existingPost = postOptional.get();
+
+            String username = authService.getCurrentUser().getUsername();
+            Long userID = authService.getCurrentUser().getId();
+            String postOwnerUsername = existingPost.getUsername();
+
+            if (username.equals(postOwnerUsername) || userService.hasRole(userID, "MODERATOR")) {
+                if (title != null) {
+                    existingPost.setTitle(title);
+                }
+                if (content != null) {
+                    existingPost.setContent(content);
+                }
+                if (about != null) {
+                    existingPost.setAbout(about);
+                }
+                if (images != null && !images.isEmpty()) {
+                    fileService.deleteAllPostImages(offerID);
+                    for (MultipartFile image : images) {
+                        fileService.uploadFeaturePostImage(image, offerID);
+                    }
+                }
+                existingPost.setUpdatedAt(LocalDateTime.now());
+
+                postService.updatePost(existingPost);
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("status", "success");
+                response.put("message", "Offer updated successfully");
+
+                return ResponseEntity.ok(response);
+            }
+        }
+        return ResponseEntity.notFound().build();
+    }
 
     @GetMapping("/{offer_id}")
     @ResponseStatus(HttpStatus.OK)
