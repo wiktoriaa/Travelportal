@@ -1,9 +1,11 @@
 package app.TravelGo.Trip;
 
+import app.TravelGo.Post.Post;
 import app.TravelGo.User.Auth.AuthService;
 import app.TravelGo.User.User;
 import app.TravelGo.User.UserService;
 import app.TravelGo.dto.CreateTripRequest;
+import app.TravelGo.dto.GetPostResponse;
 import app.TravelGo.dto.GetTripResponse;
 import app.TravelGo.dto.SimpleStringMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +65,7 @@ public class TripController {
         List<Trip> trips = tripService.getTrips();
 
         if (!trips.isEmpty()) {
+            Collections.reverse(trips);
             List<GetTripResponse> tripResponses = new ArrayList<>();
 
             for (Trip trip : trips) {
